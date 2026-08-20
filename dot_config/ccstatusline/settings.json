@@ -1,0 +1,336 @@
+{
+  "version": 3,
+  "lines": [
+    [
+      {
+        "type": "model",
+        "color": "cyan",
+        "rawValue": true,
+        "id": "1"
+      },
+      {
+        "type": "separator",
+        "id": "2"
+      },
+      {
+        "type": "context-bar",
+        "color": "blue",
+        "id": "3"
+      },
+      {
+        "type": "custom-text",
+        "customText": " ",
+        "color": "brightBlack",
+        "id": "4"
+      },
+      {
+        "type": "compaction-counter",
+        "color": "yellow",
+        "id": "5"
+      },
+      {
+        "type": "separator",
+        "id": "6"
+      },
+      {
+        "type": "cache-timer",
+        "color": "brightCyan",
+        "metadata": {
+          "ttlSeconds": "3600"
+        },
+        "id": "7"
+      }
+    ],
+    [
+      {
+        "type": "git-origin-owner-repo",
+        "color": "brightBlue",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "1"
+      },
+      {
+        "type": "separator",
+        "id": "2"
+      },
+      {
+        "type": "git-branch",
+        "color": "magenta",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "3"
+      },
+      {
+        "type": "separator",
+        "id": "4"
+      },
+      {
+        "type": "git-sha",
+        "color": "brightBlack",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "5"
+      },
+      {
+        "type": "separator",
+        "id": "6"
+      },
+      {
+        "type": "git-ahead-behind",
+        "color": "brightYellow",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "7"
+      },
+      {
+        "type": "separator",
+        "id": "8"
+      },
+      {
+        "type": "git-insertions",
+        "color": "green",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "9"
+      },
+      {
+        "type": "git-deletions",
+        "color": "red",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "10"
+      },
+      {
+        "type": "separator",
+        "id": "11"
+      },
+      {
+        "type": "git-staged-files",
+        "color": "green",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "12"
+      },
+      {
+        "type": "git-unstaged-files",
+        "color": "yellow",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "13"
+      },
+      {
+        "type": "git-untracked-files",
+        "color": "red",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "14"
+      },
+      {
+        "type": "separator",
+        "id": "15"
+      },
+      {
+        "type": "git-clean-status",
+        "color": "brightGreen",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "16"
+      },
+      {
+        "type": "separator",
+        "id": "17"
+      },
+      {
+        "type": "git-review",
+        "color": "cyan",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "18"
+      },
+      {
+        "type": "separator",
+        "id": "19"
+      },
+      {
+        "type": "git-ci-status",
+        "color": "brightGreen",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "20"
+      },
+      {
+        "type": "separator",
+        "id": "21"
+      },
+      {
+        "type": "current-working-dir",
+        "color": "brightBlue",
+        "metadata": {
+          "abbreviateHome": "true"
+        },
+        "id": "22"
+      }
+    ],
+    [
+      {
+        "type": "tokens-input",
+        "color": "brightBlue",
+        "id": "1"
+      },
+      {
+        "type": "custom-text",
+        "customText": " (",
+        "color": "brightBlack",
+        "id": "2"
+      },
+      {
+        "type": "input-speed",
+        "color": "brightBlue",
+        "rawValue": true,
+        "id": "3"
+      },
+      {
+        "type": "custom-text",
+        "customText": ")",
+        "color": "brightBlack",
+        "id": "4"
+      },
+      {
+        "type": "separator",
+        "id": "5"
+      },
+      {
+        "type": "tokens-output",
+        "color": "brightWhite",
+        "id": "6"
+      },
+      {
+        "type": "custom-text",
+        "customText": " (",
+        "color": "brightBlack",
+        "id": "7"
+      },
+      {
+        "type": "output-speed",
+        "color": "cyan",
+        "rawValue": true,
+        "id": "8"
+      },
+      {
+        "type": "custom-text",
+        "customText": ")",
+        "color": "brightBlack",
+        "id": "9"
+      },
+      {
+        "type": "separator",
+        "id": "10"
+      },
+      {
+        "type": "tokens-cached",
+        "color": "brightBlack",
+        "id": "11"
+      }
+    ],
+    [
+      {
+        "type": "session-usage",
+        "color": "green",
+        "id": "1"
+      },
+      {
+        "type": "custom-text",
+        "customText": " (",
+        "color": "brightBlack",
+        "id": "2"
+      },
+      {
+        "type": "reset-timer",
+        "color": "brightBlack",
+        "rawValue": true,
+        "id": "3"
+      },
+      {
+        "type": "custom-text",
+        "customText": ")",
+        "color": "brightBlack",
+        "id": "4"
+      },
+      {
+        "type": "separator",
+        "id": "5"
+      },
+      {
+        "type": "weekly-usage",
+        "color": "green",
+        "id": "6"
+      },
+      {
+        "type": "separator",
+        "id": "7"
+      },
+      {
+        "type": "weekly-opus-usage",
+        "color": "brightGreen",
+        "id": "8"
+      }
+    ]
+  ],
+  "flexMode": "full",
+  "compactThreshold": 60,
+  "colorLevel": 2,
+  "defaultPaddingSide": "both",
+  "inheritSeparatorColors": false,
+  "globalBold": false,
+  "gitCacheTtlSeconds": 5,
+  "minimalistMode": false,
+  "powerline": {
+    "enabled": false,
+    "separators": [
+      "\ue0b0"
+    ],
+    "separatorInvertBackground": [
+      false
+    ],
+    "startCaps": [],
+    "endCaps": [],
+    "autoAlign": false,
+    "continueThemeAcrossLines": false
+  }
+}

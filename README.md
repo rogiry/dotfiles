@@ -144,6 +144,7 @@ bash macos/capture.sh      # 현재 상태 덤프 (defaults.sh 와 비교용)
 
 `~/.claude/settings.json` 은 **의도적으로 chezmoi 관리에서 제외했다.**
 Claude Code 가 이 파일을 직접 쓰기 때문에 (테마 변경, 권한 추가 등) chezmoi 와 서로 덮어쓴다.
+반면 `~/.config/ccstatusline/settings.json` 은 chezmoi 가 관리한다.
 
 새 맥에서는 아래 블록을 `~/.claude/settings.json` 에 직접 넣는다:
 
@@ -151,35 +152,81 @@ Claude Code 가 이 파일을 직접 쓰기 때문에 (테마 변경, 권한 추
 {
   "statusLine": {
     "type": "command",
-    "command": "$HOME/.local/share/mise/shims/bunx ccstatusline@latest",
-    "padding": 0
+    "command": "$HOME/.local/share/mise/shims/bunx ccstatusline",
+    "padding": 0,
+    "refreshInterval": 10
   }
 }
 ```
 
-그리고 설정 TUI 를 실행한다 (인터랙티브라 스크립트로 못 돌린다):
+### 구성
 
-```sh
-bunx ccstatusline@latest
+```
+Opus 5 | Context: [████░░░░░░░░░░░░] 253k/1.0M (25%) ↻ 0 | Cache: 🟢 59:53
+rogiry/dotfiles | ⎇ main | 0170b75 | +0-0 | S:0M:0?:0 | ✓ | - | cwd: ~/.local/share/chezmoi
+In: 570 (0.3 t/s) | Out: 367.1k (181.4 t/s) | Cached: 42.4M
+Session: 12.0% (3hr 29m) | Weekly: 7.0% | Weekly Opus: 0.0%
 ```
 
-결과는 `~/.config/ccstatusline/settings.json` 에 저장된다.
-이 파일은 chezmoi 로 관리해도 안전하다:
+| 줄 | 역할 |
+|---|---|
+| 1 | 모델 / 컨텍스트 사용량 + 컴팩션 횟수(`↻`) / 프롬프트 캐시 잔여 |
+| 2 | 저장소 · 브랜치 · SHA · 변경량 · 파일 상태 · clean · CI / **cwd 는 항상 마지막** |
+| 3 | 입력·출력 토큰과 각각의 속도 / 캐시 읽기 누적 |
+| 4 | 세션 사용률(리셋까지) / 주간 / 주간 Opus |
 
-```sh
-chezmoi add ~/.config/ccstatusline/settings.json
-```
+`+5-1` 은 **줄 수** (staged + unstaged 합산), `S:1M:1?:2` 는 **파일 개수**
+(Staged / Modified-미스테이지 / 추적 안 됨). 두 축이 달라 둘 다 표시한다.
 
-**성능 메모** (이 맥에서 측정):
+### 알아둘 설정 (직접 파본 것들)
+
+**`@latest` 를 붙이지 않는다.** 매 렌더링마다 npm 버전 확인을 해서 느려진다.
 
 | 명령 | 렌더링 시간 |
 |---|---|
-| `bunx ccstatusline@latest` | ~0.42s (매번 최신 버전 확인) |
-| `bunx ccstatusline` | ~0.16s (캐시 사용) |
+| `bunx ccstatusline@latest` | ~0.42s |
+| `bunx ccstatusline` | **~0.18s** |
 
-상태줄이 느리게 느껴지면 `@latest` 를 떼거나 버전을 고정한다 (`ccstatusline@2.2.27`).
-stdout 에는 상태줄만, bunx 의 `Resolving dependencies` 잡음은 stderr 로 나가므로
-상태줄이 오염되지 않는다. bunx 는 작업 디렉토리에 lockfile 을 쓰지 않는다.
+업데이트는 `bun update -g` 대신 캐시를 비우거나 명시적으로 `bunx ccstatusline@latest` 를 한 번 실행하면 된다.
+
+**`refreshInterval: 10`** — 이게 없으면 상태줄은 대화가 갱신될 때만 다시 그려진다.
+즉 **유휴 상태에서 캐시 타이머가 멈춘다.** 캐시가 식기 전에 다음 메시지를 보낼지
+판단하는 게 이 위젯의 존재 이유인데, 정작 그 순간에 멈춰 있으면 쓸모가 없다.
+Claude Code >= 2.1.97 에서만 지원하며 1~60초를 넣을 수 있다.
+
+**캐시 TTL 은 `3600`(1시간)으로 설정** — 위젯 기본값은 300초(5분)다.
+Claude Code 는 1시간 TTL 을 쓰므로 기본값 그대로 두면 5분만 지나도
+`❄️ COLD` 라고 **거짓 보고**한다. 실측으로 확인했다:
+
+```
+ttlSeconds= 300  (마지막 응답 20분 전) → Cache: ❄️ COLD     ← 틀림
+ttlSeconds=3600  (마지막 응답 20분 전) → Cache: 🟢 39:54    ← 맞음
+```
+
+단, 사용량 초과(overage) 상태에서는 실제 TTL 이 5분으로 떨어지므로 그때는 반대로 길게 표시된다.
+
+**git 위젯에 숨김 플래그가 걸려 있다.** 이게 없으면 git 저장소 밖에서
+`(no git)` 이 9번 반복되며 134칸을 채우고 cwd 를 화면 밖으로 밀어낸다.
+
+| 플래그 | 대상 위젯 |
+|---|---|
+| `hideNoGit` | branch, sha, ahead-behind, insertions/deletions, staged/unstaged/untracked, clean, ci |
+| `hideNoRemote` | git-origin-owner-repo (`no remote` 출력 담당) |
+| `hideWhenEmpty` | git-review (`(no PR)` 출력 담당) |
+
+**cwd 는 `flex-separator` 를 쓰지 않고 그냥 마지막에 둔다.**
+마지막에 두는 것만으로 "긴 경로가 다른 위젯을 밀어내지 않는다"는 목적은 달성된다.
+flex 를 쓰면 줄 폭이 항상 터미널 전체로 고정되고, git 저장소 밖에서는
+cwd 만 오른쪽 끝에 외따로 떨어져 읽기 나빠진다.
+
+### 설정 변경
+
+TUI 는 인터랙티브라 스크립트로 돌릴 수 없다:
+
+```sh
+bunx ccstatusline
+chezmoi add ~/.config/ccstatusline/settings.json   # 바꾼 뒤 저장소에 반영
+```
 
 ---
 
