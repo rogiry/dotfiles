@@ -1,0 +1,33 @@
+# Ghostty 설정 (chezmoi 관리)
+# 문서: https://ghostty.org/docs/config
+
+# ── 폰트 ─────────────────────────────────────────────────────────
+# starship 프롬프트와 ccstatusline 의 아이콘/파워라인 글리프에 Nerd Font 필요.
+# brew install --cask font-meslo-lg-nerd-font
+font-family = "MesloLGS Nerd Font"
+font-size = 14
+
+# ── 테마 / 외형 ──────────────────────────────────────────────────
+theme = "Nord"
+background-opacity = 0.97
+window-padding-x = 10
+window-padding-y = 8
+cursor-style = block
+cursor-style-blink = false
+
+# ── 스크롤백 ─────────────────────────────────────────────────────
+scrollback-limit = 100000
+
+# ── 셸 ───────────────────────────────────────────────────────────
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title
+
+# ── 키바인딩 ─────────────────────────────────────────────────────
+# macOS 기본 유지 + 자주 쓰는 것만 추가
+keybind = cmd+d=new_split:right
+keybind = cmd+shift+d=new_split:down
+keybind = cmd+w=close_surface
+keybind = cmd+enter=toggle_fullscreen
+
+# macOS: Option 키를 Meta 로 (터미널에서 Alt+C 같은 fzf 바인딩용)
+macos-option-as-alt = true

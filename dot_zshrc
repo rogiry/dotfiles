@@ -1,0 +1,142 @@
+# ─────────────────────────────────────────────────────────────────
+#  ~/.zshrc — chezmoi 관리 (~/.local/share/chezmoi/dot_zshrc)
+#  편집: chezmoi edit ~/.zshrc  →  chezmoi apply
+#
+#  ⚠ 로드 순서가 중요하다. 아래 번호 순서를 바꾸지 말 것:
+#     compinit 이전에 FPATH 가 완성돼야 하고,
+#     fzf-tab 은 compinit 다음 + 위젯을 감싸는 플러그인들보다 먼저,
+#     zsh-syntax-highlighting 은 반드시 맨 마지막.
+# ─────────────────────────────────────────────────────────────────
+
+# PATH: 사용자 로컬 bin (brew shellenv 는 .zprofile 에서 처리)
+export PATH="$HOME/.local/bin:$PATH"
+
+# ── 1. mise: 런타임 버전 관리 (bun, node …) ──────────────────────
+#    compinit 보다 먼저 — mise 가 PATH 를 바꾸므로.
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
+fi
+
+# ── 2. 히스토리 ──────────────────────────────────────────────────
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=50000
+SAVEHIST=50000
+setopt SHARE_HISTORY          # 여러 탭 간 히스토리 실시간 공유
+setopt INC_APPEND_HISTORY     # 셸 종료를 기다리지 않고 즉시 기록
+setopt HIST_IGNORE_ALL_DUPS   # 중복 명령은 오래된 쪽을 제거
+setopt HIST_IGNORE_SPACE      # 공백으로 시작하면 기록 안 함 (비밀값 입력용)
+setopt HIST_REDUCE_BLANKS
+setopt HIST_VERIFY            # !! 확장 시 바로 실행하지 않고 한 번 보여줌
+setopt EXTENDED_HISTORY       # 타임스탬프 기록
+
+# ── 3. 디렉토리 / 일반 동작 ──────────────────────────────────────
+setopt AUTO_CD                # 디렉토리명만 입력해도 cd
+setopt AUTO_PUSHD             # cd 시 스택에 push
+setopt PUSHD_IGNORE_DUPS
+setopt INTERACTIVE_COMMENTS   # 대화형 셸에서도 # 주석 허용
+setopt NO_BEEP
+
+# ── 4. 완성 시스템 ───────────────────────────────────────────────
+#    brew site-functions 에 _brew _gh _mise _usage _zed 등이 들어있다.
+if [[ -d "$HOMEBREW_PREFIX/share/zsh-completions" ]]; then
+  FPATH="$HOMEBREW_PREFIX/share/zsh-completions:$FPATH"
+fi
+if [[ -d "$HOMEBREW_PREFIX/share/zsh/site-functions" ]]; then
+  FPATH="$HOMEBREW_PREFIX/share/zsh/site-functions:$FPATH"
+fi
+
+autoload -Uz compinit
+# 캐시가 하루 이내면 보안 검사를 건너뛰어 셸 시작을 빠르게 한다.
+_zcompdump="${ZDOTDIR:-$HOME}/.zcompdump"
+if [[ -n "$_zcompdump"(#qNmh-24) ]]; then
+  compinit -C -d "$_zcompdump"
+else
+  compinit -d "$_zcompdump"
+fi
+unset _zcompdump
+
+zstyle ':completion:*' menu no                      # fzf-tab 이 메뉴를 대신하므로 끔
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*:descriptions' format '[%d]'
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompcache"
+
+# ── 5. fzf-tab: 탭 완성 메뉴를 fzf 로 교체 ───────────────────────
+#    반드시 compinit 다음, autosuggestions/syntax-highlighting 보다 먼저.
+if [[ -f "$HOMEBREW_PREFIX/opt/fzf-tab/share/fzf-tab/fzf-tab.zsh" ]]; then
+  source "$HOMEBREW_PREFIX/opt/fzf-tab/share/fzf-tab/fzf-tab.zsh"
+
+  zstyle ':fzf-tab:*' fzf-flags --height=60% --layout=reverse --border
+  zstyle ':fzf-tab:*' switch-group ',' '.'
+  # cd 완성 시 eza 로 디렉토리 내용 미리보기
+  zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always --icons $realpath'
+  zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 --color=always --icons $realpath'
+fi
+
+# ── 6. fzf: 키바인딩 + fd/bat 연동 ───────────────────────────────
+if command -v fzf >/dev/null 2>&1; then
+  source <(fzf --zsh)          # Ctrl+R 히스토리, Ctrl+T 파일, Alt+C 디렉토리
+
+  # 파일 나열을 fd 로 — .gitignore 를 존중하고 훨씬 빠름
+  if command -v fd >/dev/null 2>&1; then
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+  fi
+
+  export FZF_DEFAULT_OPTS='--height=60% --layout=reverse --border --info=inline'
+  # Ctrl+T 프리뷰를 bat 으로 (문법 강조)
+  if command -v bat >/dev/null 2>&1; then
+    export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:200 {}'"
+  fi
+  export FZF_ALT_C_OPTS="--preview 'eza -1 --color=always --icons {}'"
+fi
+
+# ── 7. zoxide: cd 대체 (z / zi) ─────────────────────────────────
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init zsh)"
+fi
+
+# ── 8. zsh-autosuggestions ──────────────────────────────────────
+if [[ -f "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
+  source "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
+  bindkey '^ ' autosuggest-accept          # Ctrl+Space 로 제안 수락
+fi
+
+# ── 9. alias ────────────────────────────────────────────────────
+if command -v eza >/dev/null 2>&1; then
+  alias ls='eza --icons --group-directories-first'
+  alias ll='eza -l --icons --group-directories-first --git --time-style=long-iso'
+  alias la='eza -la --icons --group-directories-first --git --time-style=long-iso'
+  alias lt='eza --tree --level=2 --icons --group-directories-first'
+fi
+command -v bat  >/dev/null 2>&1 && alias cat='bat --paging=never'
+command -v rg   >/dev/null 2>&1 && alias grep='rg'
+command -v btop >/dev/null 2>&1 && alias top='btop'
+alias lg='lazygit'
+alias g='git'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias reload='exec zsh'
+
+# chezmoi 단축
+alias cm='chezmoi'
+alias cme='chezmoi edit'
+alias cma='chezmoi apply'
+alias cmd='chezmoi diff'
+alias cmcd='cd $(chezmoi source-path)'
+
+# ── 10. starship 프롬프트 ────────────────────────────────────────
+if command -v starship >/dev/null 2>&1; then
+  eval "$(starship init zsh)"
+fi
+
+# ── 11. zsh-syntax-highlighting ─────────────────────────────────
+#     ⚠ 반드시 이 파일의 맨 마지막. 다른 플러그인보다 뒤에 와야 한다.
+if [[ -f "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
+  source "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+fi

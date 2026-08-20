@@ -1,0 +1,4 @@
+# bat 설정 (chezmoi 관리)
+--theme="Nord"
+--style="numbers,changes,header"
+--italic-text=always

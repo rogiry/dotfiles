@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# mise 설정이 바뀔 때만 실행된다.
+# mise config hash: {{ include "dot_config/mise/config.toml" | sha256sum }}
+set -euo pipefail
+
+command -v mise >/dev/null 2>&1 || { echo "-- mise 없음, 건너뜀"; exit 0; }
+
+echo "==> mise: 런타임 설치 중…"
+mise install
+mise reshim
+mise ls

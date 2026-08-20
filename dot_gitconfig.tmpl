@@ -1,0 +1,77 @@
+# ~/.gitconfig — chezmoi 관리 (템플릿)
+# 값은 .chezmoidata.toml 의 [user] 에서 온다.
+
+[user]
+	name = {{ .user.name | quote }}
+	email = {{ .user.email | quote }}
+
+[init]
+	defaultBranch = main
+
+[core]
+	editor = zed --wait
+	# macOS 파일명 유니코드 정규화 (한글 파일명이 NFD 로 깨지는 것 방지)
+	precomposeunicode = true
+	# 대소문자만 다른 파일명을 별개로 취급 (APFS 는 기본이 대소문자 무시)
+	ignorecase = false
+{{- if .git.useDelta }}
+	pager = delta
+{{- end }}
+
+{{- if .git.useDelta }}
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true          # n / N 으로 diff 섹션 이동
+	line-numbers = true
+	side-by-side = false
+	syntax-theme = Nord
+
+[merge]
+	conflictstyle = zdiff3
+{{- end }}
+
+[diff]
+	colorMoved = default
+	algorithm = histogram
+
+[pull]
+	rebase = true
+
+[push]
+	autoSetupRemote = true
+	followTags = true
+
+[rebase]
+	autoStash = true
+	autoSquash = true
+
+[fetch]
+	prune = true
+
+[rerere]
+	enabled = true           # 같은 충돌을 두 번 풀지 않게 해결책을 기억
+
+[column]
+	ui = auto
+
+[branch]
+	sort = -committerdate
+
+[alias]
+	st = status -sb
+	co = checkout
+	sw = switch
+	br = branch
+	last = log -1 HEAD --stat
+	lg = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)'
+	unstage = restore --staged
+	amend = commit --amend --no-edit
+
+[credential "https://github.com"]
+	helper = !/opt/homebrew/bin/gh auth git-credential
+
+[credential "https://gist.github.com"]
+	helper = !/opt/homebrew/bin/gh auth git-credential

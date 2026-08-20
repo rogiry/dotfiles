@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Brewfile 이 바뀔 때만 실행된다 (아래 해시가 바뀌면 chezmoi 가 재실행).
+# Brewfile hash: {{ include "Brewfile" | sha256sum }}
+set -euo pipefail
+
+command -v brew >/dev/null 2>&1 || {
+  echo "!! Homebrew 가 없습니다. 먼저 설치하세요:"
+  echo "   /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+  exit 1
+}
+
+echo "==> brew bundle 적용 중…"
+export HOMEBREW_NO_ENV_HINTS=1
+brew bundle install --file="{{ .chezmoi.sourceDir }}/Brewfile" --no-upgrade

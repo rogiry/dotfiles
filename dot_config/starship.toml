@@ -1,0 +1,94 @@
+# starship 프롬프트 설정 (chezmoi 관리)
+# 아이콘은 Nerd Font 필요 — Ghostty 가 MesloLGS Nerd Font 를 쓰도록 설정돼 있음.
+# 문서: https://starship.rs/config/
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = """
+[](bg:#3B4252 fg:#3B4252)\
+$directory\
+[](fg:#3B4252 bg:#434C5E)\
+$git_branch\
+$git_status\
+[](fg:#434C5E bg:#4C566A)\
+$bun\
+$nodejs\
+$python\
+$rust\
+$golang\
+[](fg:#4C566A)\
+$cmd_duration\
+$line_break\
+$character"""
+
+add_newline = true
+command_timeout = 1000
+
+[directory]
+style = "bg:#3B4252 fg:#88C0D0 bold"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncate_to_repo = true
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙"
+"Downloads" = ""
+"Music"     = "󰝚"
+"Pictures"  = ""
+"Developer" = "󰲋"
+
+[git_branch]
+symbol = ""
+style = "bg:#434C5E fg:#A3BE8C"
+format = '[ $symbol $branch ]($style)'
+
+[git_status]
+style = "bg:#434C5E fg:#EBCB8B"
+format = '[$all_status$ahead_behind ]($style)'
+conflicted = "="
+ahead      = "⇡${count}"
+behind     = "⇣${count}"
+diverged   = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked  = "?${count}"
+stashed    = "\\$${count}"
+modified   = "!${count}"
+staged     = "+${count}"
+renamed    = "»${count}"
+deleted    = "✘${count}"
+
+# ── 런타임: mise 가 관리하는 버전이 그대로 표시된다 ──────────────
+[bun]
+symbol = ""
+style = "bg:#4C566A fg:#D8DEE9"
+format = '[ $symbol $version ]($style)'
+
+[nodejs]
+symbol = ""
+style = "bg:#4C566A fg:#D8DEE9"
+format = '[ $symbol $version ]($style)'
+
+[python]
+symbol = ""
+style = "bg:#4C566A fg:#D8DEE9"
+format = '[ $symbol $version ]($style)'
+
+[rust]
+symbol = ""
+style = "bg:#4C566A fg:#D8DEE9"
+format = '[ $symbol $version ]($style)'
+
+[golang]
+symbol = ""
+style = "bg:#4C566A fg:#D8DEE9"
+format = '[ $symbol $version ]($style)'
+
+[cmd_duration]
+min_time = 2000
+style = "fg:#EBCB8B"
+format = ' [󰔟 $duration]($style)'
+
+[character]
+success_symbol = "[❯](bold #A3BE8C)"
+error_symbol   = "[❯](bold #BF616A)"
+vimcmd_symbol  = "[❮](bold #A3BE8C)"

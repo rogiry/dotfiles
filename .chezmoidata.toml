@@ -1,0 +1,8 @@
+# chezmoi 템플릿에서 쓰는 변수. 새 머신에서 값만 바꾸면 됨.
+[user]
+    name  = "rogiry"
+    email = "hogil1235@gmail.com"
+
+[git]
+    # git-delta 를 pager 로 쓸지 (brew 로 설치됨)
+    useDelta = true

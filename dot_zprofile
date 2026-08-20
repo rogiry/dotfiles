@@ -1,0 +1,4 @@
+# ~/.zprofile — 로그인 셸에서 1회 실행 (chezmoi 관리)
+# Homebrew 환경변수: PATH, MANPATH, HOMEBREW_PREFIX 등을 설정한다.
+# .zshrc 가 $HOMEBREW_PREFIX 를 참조하므로 여기서 먼저 잡아줘야 한다.
+eval "$(/opt/homebrew/bin/brew shellenv zsh)"

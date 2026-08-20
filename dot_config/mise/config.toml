@@ -1,0 +1,31 @@
+# mise 전역 설정
+# 문서: https://mise.jdx.dev/configuration.html
+
+[settings]
+# ── 백엔드 우선순위: core > aqua > (asdf/vfox 차단) ───────────────
+#
+# mise 레지스트리가 이미 이 순서를 반영한다:
+#   bun     -> core:bun                                   (core 가 있으면 core 만)
+#   node    -> core:node
+#   jq      -> aqua:jqlang/jq   asdf:mise-plugins/asdf-jq  (core 없을 때 aqua 가 1순위)
+#   lazygit -> aqua:jesseduffield/lazygit   asdf:...
+#
+# core = mise 내장 구현. 언어별 특수사항을 다룬다
+#        (lts 별칭, .node-version 인식, npm/npx/corepack 심 생성, 소스 빌드 등).
+# aqua = 체크섬·서명이 검증되는 범용 바이너리 레지스트리. core 가 없는 툴의 1순위.
+#
+# 아래 설정은 asdf/vfox 플러그인 백엔드를 꺼서, core 도 aqua 도 없을 때
+# 임의 코드를 실행하는 플러그인으로 조용히 내려가는 것을 막는다.
+disable_backends = ["asdf", "vfox"]
+
+# aqua 아티팩트 검증 (모두 mise 기본값 true — 명시해서 고정)
+[settings.aqua]
+cosign              = true
+slsa                = true
+github_attestations = true
+minisign            = true
+
+[tools]
+# 둘 다 core 백엔드. 레지스트리 기본값이자 이 파일의 우선순위 정책과 일치한다.
+bun  = "latest"
+node = "lts"     # core 만 "lts" 별칭을 해석한다 (aqua:nodejs/node 는 빈 결과)
