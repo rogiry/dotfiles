@@ -27,6 +27,19 @@
 - 트랙패드 설정은 **두 도메인 모두**에 써야 함 (내장 + Magic Trackpad),
   그리고 로그아웃해야 반영됨.
 
+## 셸 관련 함정
+
+- `.zprofile` 은 로그인 셸에서만 돈다. `dot_zshrc` 0번 섹션의 brew shellenv
+  폴백을 지우면 **차가운 비로그인 셸에서 플러그인이 전부 조용히 안 올라온다.**
+- `ls` 는 `eza` alias 라 **`ls -t` / `ls -ltr` 이 깨진다.** 스크립트에서
+  최신 파일을 찾을 땐 `/bin/ls -t` 또는 `find` 를 쓸 것.
+  (Bash 도구 셸도 사용자 프로파일을 읽어 alias 가 살아있다.)
+- `cat`/`grep`/`top` 은 alias 하지 않는다. 특히 `rg` 는 `.gitignore` 와 숨김
+  파일을 건너뛰어 **에러 없이 결과가 누락**된다. 전수 검색은 `rg -uuu`.
+- 이 맥의 `python3` 은 **3.9.6** — `tomllib` 없음. TOML 파싱은 도구 자체에 시킬 것.
+- `timeout` 명령이 없다 (GNU coreutils 미설치).
+- `starship config` 는 **에디터를 연다.** 검증에는 `starship prompt` 를 쓸 것.
+
 ## ccstatusline 테스트
 
 stdin 에 JSON 을 넣어 렌더한다:

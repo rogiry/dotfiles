@@ -104,7 +104,8 @@ lazygit -> aqua:jesseduffield/lazygit   asdf:...
 `dot_zshrc` 의 번호는 아래 순서를 그대로 따른다.
 
 ```
-   brew shellenv          (.zprofile — $HOMEBREW_PREFIX 를 .zshrc 가 참조)
+   brew shellenv          (.zprofile — 로그인 셸에서만)
+0. brew shellenv 폴백     ($HOMEBREW_PREFIX 가 비었을 때만. 아래 설명)
 1. mise activate          (PATH 를 바꾸므로 compinit 보다 먼저)
 2. 히스토리 옵션
 3. 디렉토리 / 일반 옵션
@@ -119,8 +120,59 @@ lazygit -> aqua:jesseduffield/lazygit   asdf:...
 12. zsh-syntax-highlighting   ← 반드시 맨 마지막
 ```
 
-순서가 실제로 중요한 건 **1 → 4 → 5 → 6·7·8 → 11 → 12** 구간이다.
+순서가 실제로 중요한 건 **0 → 1 → 4 → 5 → 6·7·8 → 11 → 12** 구간이다.
 2·3·9·10 은 어디에 있어도 되지만, 번호를 유지해야 diff 가 읽기 쉽다.
+
+### 0번(Homebrew 폴백)이 왜 필요한가
+
+`.zprofile` 은 **로그인 셸에서만** 실행된다. 부모 환경을 물려받지 못한
+차가운 비로그인 셸(cron, `ssh host zsh -i`, 일부 터미널 설정)에서는
+`$HOMEBREW_PREFIX` 가 비고, 그러면 아래 플러그인 로드가 **에러 없이 전부 건너뛰어진다.**
+
+실측한 증상:
+
+```
+비로그인 셸 (폴백 전):  HOMEBREW_PREFIX=[]  fzf-tab=0 autosuggest=0 syntax-hl=0 starship=INACTIVE
+비로그인 셸 (폴백 후):  HOMEBREW_PREFIX=[/opt/homebrew]  fzf-tab=1 autosuggest=1 syntax-hl=1 starship=active
+```
+
+---
+
+## alias 정책: 원본 명령을 덮어쓰지 않는다
+
+`cat`/`grep`/`top` 은 **일부러 alias 하지 않는다.** 대체 도구가 드롭인이 아니라서
+원본 플래그가 깨지거나, 더 나쁘게는 **에러 없이 결과가 달라진다.**
+
+실측한 것:
+
+| 명령 | `bat`/`rg`/`btop` 로 alias 했을 때 |
+|---|---|
+| `cat -v`, `cat -e` | ✗ `error: unexpected argument` |
+| `grep -E "a\|b"` | ✗ rg 는 기본이 정규식이라 `-E` 없음 |
+| `grep "a\\|b"` (BRE) | ✗ rg 는 POSIX BRE 아님 |
+| `top -l 1` | ✗ btop 에 `-l` 없음 |
+
+**가장 위험한 건 조용한 오작동이다.** `rg` 는 `.gitignore` 와 숨김 파일을 건너뛴다:
+
+```
+같은 패턴이 4개 파일에 존재 (2개는 .gitignore, 1개는 숨김 파일)
+  /usr/bin/grep -r  →  4개 발견
+  rg                →  1개만 발견     ← 에러 없이 3개 누락
+```
+
+대신 짧은 별칭을 둔다:
+
+| 별칭 | 실제 |
+|---|---|
+| `c` | `bat --paging=never` |
+| `rgi` | `rg -i` |
+| `rga` | `rg -uuu` (ignore·숨김 무시하고 전부 검색) |
+| `btm` | `btop` |
+| `lst` | `eza -l --sort=modified --reverse` (`ls -ltr` 대용) |
+
+`ls` → `eza` 만 예외적으로 유지한다. `-l`, `-a`, `-1`, `-h`, `--color` 를 다 받아서
+호환성이 좋다. 단 **`-t` 는 eza 에서 `--time`(인자 필요)이라 `ls -t`, `ls -ltr` 이 깨진다** → `lst` 사용.
+
 
 ---
 
