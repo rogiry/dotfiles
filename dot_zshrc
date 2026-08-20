@@ -107,7 +107,31 @@ if [[ -f "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]
   bindkey '^ ' autosuggest-accept          # Ctrl+Space 로 제안 수락
 fi
 
-# ── 9. alias ────────────────────────────────────────────────────
+# ── 9. 시크릿: macOS 키체인에서 런타임 조회 ─────────────────────
+#    값은 저장소에도, 디스크에도 남지 않는다. 여기 있는 건 조회 명령뿐.
+#
+#    저장:  security add-generic-password -s <서비스> -a "$USER" -w -U
+#           (-w 뒤에 값을 생략하면 프롬프트로 입력 → 셸 히스토리에 안 남음)
+#    확인:  security find-generic-password -s <서비스> -a "$USER" -w
+#    삭제:  security delete-generic-password -s <서비스> -a "$USER"
+#
+#    ⚠ chezmoi 템플릿의 {{ keyring ... }} 는 쓰지 말 것 —
+#      apply 시점에 치환돼서 ~/.zshrc 에 평문이 박힌다.
+_kc() { security find-generic-password -s "$1" -a "$USER" -w 2>/dev/null; }
+
+# 키체인에 값이 있을 때만 export (없으면 빈 변수를 만들지 않는다)
+_kc_export() {
+  local _v; _v="$(_kc "$2")"
+  [[ -n "$_v" ]] && export "$1=$_v"
+  return 0
+}
+
+# 조회당 약 10ms. 쓸 것만 주석 해제.
+# _kc_export ANTHROPIC_API_KEY  anthropic
+# _kc_export OPENAI_API_KEY     openai
+# _kc_export GITHUB_TOKEN       github
+
+# ── 10. alias ────────────────────────────────────────────────────
 if command -v eza >/dev/null 2>&1; then
   alias ls='eza --icons --group-directories-first'
   alias ll='eza -l --icons --group-directories-first --git --time-style=long-iso'
@@ -130,12 +154,12 @@ alias cma='chezmoi apply'
 alias cmd='chezmoi diff'
 alias cmcd='cd $(chezmoi source-path)'
 
-# ── 10. starship 프롬프트 ────────────────────────────────────────
+# ── 11. starship 프롬프트 ────────────────────────────────────────
 if command -v starship >/dev/null 2>&1; then
   eval "$(starship init zsh)"
 fi
 
-# ── 11. zsh-syntax-highlighting ─────────────────────────────────
+# ── 12. zsh-syntax-highlighting ─────────────────────────────────
 #     ⚠ 반드시 이 파일의 맨 마지막. 다른 플러그인보다 뒤에 와야 한다.
 if [[ -f "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
   source "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
