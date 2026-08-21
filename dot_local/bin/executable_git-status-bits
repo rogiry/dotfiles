@@ -1,0 +1,104 @@
+#!/bin/sh
+# ccstatusline 의 custom-command 위젯용. stdin 으로 statusline JSON 을 받는다.
+#
+#   git-status-bits sync    원격 동기화 상태
+#     ✓      원격과 동일
+#     ↑2     푸시 필요 / ↓3  풀 필요 / ↑2↓3  갈라짐
+#     ⚠      upstream 미설정
+#
+#   git-status-bits files   작업 트리 파일 상태 (색 포함)
+#     S:0 M:1 ?:2    staged / modified(미스테이지) / untracked 파일 수
+#
+#   git-status-bits branch  브랜치 이름 + 워크트리 여부
+#     ⎇ main      메인 워크트리
+#     ⑂ feature   연결된 워크트리 (git worktree add 로 만든 것)
+#     글리프만 바뀌므로 자리를 더 먹지 않는다.
+#
+#   git-status-bits wt      워크트리 표시만 (⑂ 또는 빈 출력)
+#
+# git 저장소가 아니면 어느 모드든 아무것도 출력하지 않는다.
+# 상태줄에서 빈 출력은 위젯이 통째로 접히므로 구분자(|)가 남지 않는다.
+#
+# 왜 내장 위젯을 안 쓰나:
+#   - git-ahead-behind 는 ahead/behind 가 모두 0이면 무조건 null 을 반환해서
+#     "동기화됨(✓)"을 표현할 수 없다.
+#   - git-staged-files 등 3개를 나란히 두면 S:0M:1?:2 처럼 붙어버린다.
+#     custom-text 로 공백을 넣으면 그 공백이 항상 렌더돼서, git 저장소가
+#     아닐 때 빈 구분자(|)가 줄에 남는다. merge 속성으로는 공백이 안 들어간다.
+#
+# 주의: 이 스크립트의 cwd 는 ccstatusline 프로세스의 cwd 이지
+#       상태줄이 표시 중인 디렉토리가 아니다. 반드시 stdin JSON 에서 읽는다.
+
+set -u
+
+mode=${1:-sync}
+
+json=$(cat)
+dir=$(printf '%s' "$json" | sed -n 's/.*"current_dir"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+[ -n "$dir" ] || dir=$(printf '%s' "$json" | sed -n 's/.*"cwd"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+[ -n "$dir" ] || exit 0
+[ -d "$dir" ] || exit 0
+
+git -C "$dir" rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
+
+case "$mode" in
+commit|sync)
+    # SHA 와 동기화 상태를 한 위젯이 함께 그린다.
+    # 내장 git-sha 위젯을 쓰고 여기서 " ✓" 만 출력하는 방법은 안 된다 —
+    # ccstatusline 이 custom-command 출력에 .trim() 을 걸어 앞 공백을 지운다.
+    sha=$(git -C "$dir" rev-parse --short HEAD 2>/dev/null) || exit 0
+
+    counts=$(git -C "$dir" rev-list --left-right --count '@{upstream}...HEAD' 2>/dev/null)
+    if [ -z "$counts" ]; then
+        printf '%s ⚠' "$sha"        # upstream 미설정
+        exit 0
+    fi
+    behind=$(printf '%s' "$counts" | awk '{print $1}')
+    ahead=$(printf '%s' "$counts" | awk '{print $2}')
+    if [ "$ahead" = "0" ] && [ "$behind" = "0" ]; then
+        printf '%s ✓' "$sha"
+    else
+        printf '%s ' "$sha"
+        [ "$ahead" = "0" ]  || printf '↑%s' "$ahead"
+        [ "$behind" = "0" ] || printf '↓%s' "$behind"
+    fi
+    ;;
+
+files)
+    # porcelain v1: XY <path>   X=index(staged)  Y=worktree(unstaged)  ??=untracked
+    git -C "$dir" status --porcelain 2>/dev/null | awk '
+        BEGIN { s = 0; m = 0; u = 0 }
+        {
+            x = substr($0, 1, 1)
+            y = substr($0, 2, 1)
+            if (x == "?" && y == "?") { u++; next }
+            if (x != " " && x != "?") s++
+            if (y != " " && y != "?") m++
+        }
+        END {
+            printf "\033[38;5;70mS:%d\033[39m \033[38;5;178mM:%d\033[39m \033[38;5;160m?:%d\033[39m", s, m, u
+        }'
+    ;;
+
+branch|wt)
+    # --git-dir 과 --git-common-dir 이 다르면 연결된 워크트리다.
+    gd=$(git -C "$dir" rev-parse --absolute-git-dir 2>/dev/null)
+    cd_=$(git -C "$dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+    if [ -n "$gd" ] && [ -n "$cd_" ] && [ "$gd" != "$cd_" ]; then
+        glyph='⑂'
+    else
+        glyph='⎇'
+    fi
+
+    [ "$mode" = "wt" ] && { [ "$glyph" = '⑂' ] && printf '⑂'; exit 0; }
+
+    name=$(git -C "$dir" symbolic-ref --short HEAD 2>/dev/null)
+    if [ -z "$name" ]; then
+        # 분리된 HEAD (rebase, 태그 체크아웃 등)
+        name=$(git -C "$dir" rev-parse --short HEAD 2>/dev/null) || exit 0
+        printf '%s %s' "$glyph" "$name"
+    else
+        printf '%s %s' "$glyph" "$name"
+    fi
+    ;;
+esac

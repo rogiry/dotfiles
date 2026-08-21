@@ -37,6 +37,21 @@
 - 시크릿 '값'은 여기에도 두지 않는다 — 9번 섹션 키체인 방식을 쓴다.
 - 위젯 감싸는 플러그인은 여기 넣으면 안 된다 (12번 syntax-highlighting 뒤라 충돌).
 
+## 상태줄 git 위젯은 자체 스크립트다
+
+`~/.local/bin/git-status-bits` (모드: `branch` / `commit` / `files` / `wt`).
+내장 위젯으로 안 되는 이유가 각각 있다 — 스크립트 상단 주석에 적어뒀다.
+
+- **빈 값 위젯 옆에 `custom-text` 를 두지 말 것.** custom-text 는 항상 렌더돼서,
+  git 저장소 밖에서 `  |    | cwd: ~` 처럼 빈 구분자가 남는다.
+- **`merge` 속성은 공백을 넣어주지 않는다.** `defaultPaddingSide` 는 Powerline 전용.
+  간격이 필요하면 스크립트가 직접 출력해야 한다.
+- **`custom-command` 출력은 `.trim()` 된다.** 앞뒤 공백으로 간격을 못 만든다.
+  그래서 `commit` 모드가 SHA 와 ✓ 를 함께 출력한다.
+- **`merge: true` + 빈 위젯 = 구분자를 건너뛴다.** 옵셔널 위젯에 merge 를 걸면
+  값이 없을 때 앞뒤가 붙어버린다 (`⎇ main0afd20f✓`).
+- `custom-command` 의 cwd 는 ccstatusline 프로세스의 cwd 다. stdin JSON 에서 읽을 것.
+
 ## 셸 관련 함정
 
 - `.zprofile` 은 로그인 셸에서만 돈다. `dot_zshrc` 0번 섹션의 brew shellenv
