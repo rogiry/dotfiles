@@ -1,5 +1,5 @@
 # starship 프롬프트 설정 (chezmoi 관리)
-# 아이콘은 Nerd Font 필요 — Ghostty 가 MesloLGS Nerd Font 를 쓰도록 설정돼 있음.
+# 아이콘은 Nerd Font 필요 — ghostty/config 가 MesloLGS Nerd Font 를 쓰도록 설정돼 있음.
 # 문서: https://starship.rs/config/
 
 "$schema" = 'https://starship.rs/config-schema.json'

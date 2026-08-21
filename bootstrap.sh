@@ -70,7 +70,7 @@ cat <<'MSG'
 ────────────────────────────────────────────────────────────
  완료. 남은 수동 작업:
 
-  1. Ghostty 재시작        (Nerd Font 적용)
+  1. 터미널 재시작          (Nerd Font 적용)
   2. 로그아웃 또는 재시작    (트랙패드 제스처 완전 반영)
   3. bunx ccstatusline@latest   (Claude Code 상태줄 설정 TUI)
      → docs/statusline.md 참고

@@ -7,7 +7,7 @@ macOS 개발 환경을 [chezmoi](https://chezmoi.io) 로 관리한다.
 |---|---|
 | 셸 | zsh + starship + fzf-tab + autosuggestions + syntax-highlighting |
 | 런타임 | mise (bun, node) |
-| 터미널 | Ghostty + MesloLGS Nerd Font |
+| 터미널 | cmux (Ghostty 기반) + MesloLGS Nerd Font |
 | 도구 | eza, bat, rg, fd, fzf, zoxide, lazygit, gh |
 | 시스템 | Dock / 키보드 / 트랙패드 설정 스크립트 |
 | 부가 | Claude Code 상태줄 (ccstatusline) |
@@ -40,7 +40,7 @@ chezmoi init --apply rogiry/dotfiles \
 
 설치 후 남는 수동 작업:
 
-1. **Ghostty 재시작** — Nerd Font 반영
+1. **터미널 재시작** — Nerd Font 반영
 2. **로그아웃 또는 재시작** — 트랙패드 제스처 완전 반영
 3. **[상태줄 설정](docs/statusline.md)** — `~/.claude/settings.json` 에 스니펫 추가
 
@@ -60,7 +60,7 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 |---|---|
 | `Brewfile` | 설치할 패키지·앱 |
 | `macos/defaults.sh` | 시스템 기본값 (이 맥의 스냅샷이다) |
-| `dot_config/ghostty/config` | 터미널 폰트·테마 |
+| `dot_config/ghostty/config` | 터미널 폰트·테마 (cmux 가 읽는다) |
 | `dot_gitconfig.tmpl` | git alias, 에디터 (`zed --wait`) |
 | `bootstrap.sh` | `DOTFILES_REPO` 기본값 |
 
@@ -114,7 +114,7 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 ├── create_dot_zshrc.local       →  ~/.zshrc.local  (최초 1회만 생성)
 ├── dot_config/
 │   ├── starship.toml            →  ~/.config/starship.toml
-│   ├── ghostty/config           →  ~/.config/ghostty/config
+│   ├── ghostty/config           →  ~/.config/ghostty/config  (cmux 가 읽음)
 │   ├── mise/config.toml         →  ~/.config/mise/config.toml
 │   ├── bat/config               →  ~/.config/bat/config
 │   └── ccstatusline/settings.json  →  ~/.config/ccstatusline/settings.json

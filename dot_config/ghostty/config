@@ -1,5 +1,10 @@
 # Ghostty 설정 (chezmoi 관리)
 # 문서: https://ghostty.org/docs/config
+#
+# 주의: 이 맥에는 Ghostty.app 이 없다. 그래도 이 파일은 살아있는 설정이다 —
+# cmux(Ghostty 기반 터미널)가 테마·폰트·색·커서와 터미널 키바인딩을 여기서 읽는다.
+# cmux 자체 설정(사이드바·탭바·단축키)은 ~/.config/cmux/cmux.json 쪽이다.
+# 안 쓰는 파일로 보인다고 지우지 말 것.
 
 # ── 폰트 ─────────────────────────────────────────────────────────
 # starship 프롬프트와 ccstatusline 의 아이콘/파워라인 글리프에 Nerd Font 필요.
