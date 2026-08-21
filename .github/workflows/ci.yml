@@ -79,8 +79,11 @@ jobs:
           # archive 는 모든 템플릿을 렌더하되 스크립트를 실행하지 않는다.
           # 정의되지 않은 변수나 템플릿 문법 오류면 exit 1.
           OUT="$(mktemp -d)"
+          # --format=tar 을 명시한다. 기본값이 tar.gz 라서 GNU tar 가
+          # "Archive is compressed. Use -z option" 으로 거부한다
+          # (macOS 의 bsdtar 는 자동 감지해서 조용히 넘어가 로컬에선 안 보인다).
           HOME="$FAKE" chezmoi archive --source="$PWD" --destination="$FAKE" \
-            | tar -xf - -C "$OUT"
+            --format=tar | tar -xf - -C "$OUT"
           echo "  ok   모든 템플릿 렌더 성공"
 
           # .chezmoiscripts/*.tmpl 은 {{ }} 때문에 렌더 전에는 구문 검사가 안 된다.
