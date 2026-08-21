@@ -1,2 +1,10 @@
 .DS_Store
 *.swp
+
+# 워크트리는 저장소 안(.claude/worktrees/<이름>)에 만들어지지만 저장소의 내용이
+# 아니다. 빼두지 않으면 메인 체크아웃의 git status 에 ?? 로 영구히 남아,
+# "작업 트리가 깨끗한지" 를 한눈에 볼 수 없게 된다.
+#
+# .chezmoiignore 에는 넣지 않아도 된다 — chezmoi 가 .claude/ 를 애초에 관리하지
+# 않는다 (`chezmoi managed | grep '^\.claude'` 가 비어있음을 확인).
+.claude/worktrees/
