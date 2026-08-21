@@ -49,7 +49,7 @@
 
 ## 상태줄 git 위젯은 자체 스크립트다
 
-`~/.local/bin/git-status-bits` (모드: `branch` / `commit` / `files` / `wt`).
+`~/.local/bin/git-status-bits` (모드: `repo` / `branch` / `commit` / `sync` / `files` / `wt`).
 내장 위젯으로 안 되는 이유가 각각 있다 — 스크립트 상단 주석에 적어뒀다.
 
 - **빈 값 위젯 옆에 `custom-text` 를 두지 말 것.** custom-text 는 항상 렌더돼서,

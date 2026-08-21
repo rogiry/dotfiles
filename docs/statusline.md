@@ -24,16 +24,16 @@ Claude Code 가 이 파일을 직접 쓰기 때문에 (테마 변경, 권한 추
 
 ```
 Model: Opus 5 | Context: [████░░░░░░░░░░░░] 253k/1.0M (25%) ↻ 0 | Cache: 🟢 59:53
-rogiry/dotfiles | ⎇ main ✓ | e8f440e | +0-0 | S:0 M:0 ?:0 | - | cwd: ~/.local/share/chezmoi
-In: 570 (0.3 t/s) | Out: 367.1k (181.4 t/s) | Cached: 42.4M
+rogiry/dotfiles | ⎇ main ✓ | e8f440e | +0-0 | S:0 M:0 ?:0 | -
+In: 570 (0.3 t/s) | Out: 367.1k (181.4 t/s) | Cached: 42.4M | cwd: ~/.local/share/chezmoi
 Session: 24.0% (54m) | Weekly: 11.0% | Weekly Opus: 0.0%
 ```
 
 | 줄 | 역할 |
 |---|---|
 | 1 | 모델 / 컨텍스트 사용량 + 컴팩션 횟수(`↻`) / 프롬프트 캐시 잔여 |
-| 2 | 저장소 · 브랜치+동기화 · SHA · 변경량 · 파일 상태 · PR · CI / **cwd 는 항상 마지막** |
-| 3 | 입력·출력 토큰과 각각의 속도 / 캐시 읽기 누적 |
+| 2 | 저장소(+워크트리) · 브랜치+동기화 · SHA · 변경량 · 파일 상태 · PR · CI |
+| 3 | 입력·출력 토큰과 각각의 속도 / 캐시 읽기 누적 / **cwd 는 항상 마지막** |
 | 4 | 세션 사용률(리셋까지) / 주간 / 주간 Opus |
 
 `+5-1` 은 **줄 수** (staged + unstaged 합산), `S:1 M:1 ?:2` 는 **파일 개수**
@@ -48,11 +48,12 @@ Session: 24.0% (54m) | Weekly: 11.0% | Weekly Opus: 0.0%
 
 | 모드 | 출력 | 비고 |
 |---|---|---|
-| `branch` | `⎇ main ✓` / `⑂ feat ↑2↓3` / `⎇ main ⚠` | 브랜치 + 워크트리 + 동기화. `⑂` 는 연결된 워크트리 |
+| `repo` | `rogiry/dotfiles` / `rogiry/dotfiles ⑂` | origin 의 owner/repo. `⑂` 는 연결된 워크트리 |
+| `branch` | `⎇ main ✓` / `⎇ feat ↑2↓3` / `⎇ main ⚠` | 브랜치 + 동기화 |
 | `commit` | `e8f440e` | 짧은 SHA 만 |
 | `sync` | `✓` / `↑2` / `↓3` / `↑2↓3` / `⚠` | 동기화 상태만 |
 | `files` | `S:0 M:1 ?:2` | 색 포함 (staged 초록 / modified 노랑 / untracked 빨강) |
-| `wt` | `⑂` 또는 빈 출력 | 워크트리 표시만 필요할 때 |
+| `wt` | `⑂` 또는 빈 출력 | 워크트리 표시만 필요할 때 (현재 미사용) |
 
 `✓` 동기화됨 · `↑` 푸시 필요 · `↓` 풀 필요 · `⚠` upstream 미설정.
 **분리된 HEAD 에는 표시를 붙이지 않는다** — upstream 개념이 없어 항상 `⚠` 가 떠 노이즈가 된다.
@@ -70,6 +71,11 @@ git 저장소가 아니면 어느 모드든 **아무것도 출력하지 않는�
 
 - **`git-ahead-behind` 는 ahead/behind 가 모두 0이면 무조건 `null` 을 반환한다.**
   즉 "동기화됨(✓)"을 표현할 방법이 없다.
+- **`git-origin-owner-repo` 는 내장이라 뒤에 워크트리 표시를 붙일 수 없다.**
+  `merge` 로 이어붙이면 공백이 안 들어가 `rogiry/dotfiles⑂` 가 된다
+  (`merge` 는 패딩을 넣지 않고, `custom-command` 출력은 `.trim()` 된다).
+  그래서 owner/repo 파싱까지 `repo` 모드가 직접 한다 — 원격이 없으면 빈 출력이라
+  기존 `hideNoRemote` 와 계약이 같다.
 - **`git-staged-files` 등 3개를 나란히 두면 `S:0M:1?:2` 처럼 붙어버린다.**
   `custom-text` 로 공백을 넣으면 그 공백이 **항상** 렌더돼서, git 저장소가
   아닐 때 `  |    | cwd: ~` 처럼 빈 구분자가 줄에 남는다.
@@ -86,15 +92,15 @@ git 저장소가 아니면 어느 모드든 **아무것도 출력하지 않는�
 
 ### 남아있는 내장 git 위젯
 
-`git-origin-owner-repo`, `git-insertions`, `git-deletions`, `git-review`, `git-ci-status`
-는 그대로 쓰되 **숨김 플래그가 걸려 있다.** 이게 없으면 git 저장소 밖에서
-`(no git)` 이 반복되며 줄을 채우고 cwd 를 화면 밖으로 밀어낸다.
+`git-insertions`, `git-deletions`, `git-review`, `git-ci-status` 는 그대로 쓰되
+**숨김 플래그가 걸려 있다.** 이게 없으면 git 저장소 밖에서 `(no git)` 이
+반복되며 2번 줄을 통째로 채운다.
 
 | 플래그 | 담당 |
 |---|---|
 | `hideNoGit` | git 저장소가 아닐 때 숨김 |
-| `hideNoRemote` | `git-origin-owner-repo` 의 `no remote` 출력 억제 |
 | `hideWhenEmpty` | `git-review` 의 `(no PR)` 출력 억제 |
+| `hideNoRemote` | 원격이 없을 때 숨김 (`git-origin-owner-repo` 를 걷어낸 뒤로는 사실상 무해한 잔재) |
 
 ---
 
@@ -131,11 +137,15 @@ ttlSeconds=3600  (마지막 응답 20분 전) → Cache: 🟢 39:54    ← 맞�
 
 단, 사용량 초과(overage) 상태에서는 실제 TTL 이 5분으로 떨어지므로 그때는 반대로 길게 표시된다.
 
-### cwd 는 `flex-separator` 없이 그냥 마지막에 둔다
+### cwd 는 3번 줄 끝에 둔다
 
-마지막에 두는 것만으로 "긴 경로가 다른 위젯을 밀어내지 않는다"는 목적은 달성된다.
-flex 를 쓰면 줄 폭이 항상 터미널 전체로 고정되고, git 저장소 밖에서는
-cwd 만 오른쪽 끝에 외따로 떨어져 읽기 나빠진다.
+원래 2번 줄 끝이었는데, 워크트리처럼 **브랜치 이름이 긴 경우 2번 줄이 넘쳐서
+cwd 가 통째로 잘려나갔다.** 2번 줄은 위젯이 일곱 개라 폭 변동이 크고, 3번 줄은
+토큰 수 셋뿐이라 길이가 거의 고정이다. 그래서 cwd 를 3번 줄로 옮겼다.
+
+`flex-separator` 는 쓰지 않는다. 줄 맨 끝에 두는 것만으로 "긴 경로가 다른 위젯을
+밀어내지 않는다"는 목적은 달성되고, flex 를 쓰면 줄 폭이 항상 터미널 전체로
+고정돼 cwd 만 오른쪽 끝에 외따로 떨어져 읽기 나빠진다.
 
 ---
 
