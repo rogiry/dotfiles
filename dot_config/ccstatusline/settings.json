@@ -131,7 +131,13 @@
         }
       },
       {
-        "id": "13",
+        "type": "custom-text",
+        "customText": " ",
+        "color": "brightBlack",
+        "id": "13"
+      },
+      {
+        "id": "14",
         "type": "git-unstaged-files",
         "color": "yellow",
         "metadata": {
@@ -141,23 +147,15 @@
         }
       },
       {
-        "id": "14",
-        "type": "git-untracked-files",
-        "color": "red",
-        "metadata": {
-          "hideNoGit": "true",
-          "hideWhenEmpty": "true",
-          "hideNoRemote": "true"
-        }
-      },
-      {
-        "id": "15",
-        "type": "separator"
+        "type": "custom-text",
+        "customText": " ",
+        "color": "brightBlack",
+        "id": "15"
       },
       {
         "id": "16",
-        "type": "git-clean-status",
-        "color": "brightGreen",
+        "type": "git-untracked-files",
+        "color": "red",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
@@ -170,8 +168,8 @@
       },
       {
         "id": "18",
-        "type": "git-review",
-        "color": "cyan",
+        "type": "git-clean-status",
+        "color": "brightGreen",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
@@ -184,8 +182,8 @@
       },
       {
         "id": "20",
-        "type": "git-ci-status",
-        "color": "brightGreen",
+        "type": "git-review",
+        "color": "cyan",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
@@ -198,6 +196,20 @@
       },
       {
         "id": "22",
+        "type": "git-ci-status",
+        "color": "brightGreen",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        }
+      },
+      {
+        "id": "23",
+        "type": "separator"
+      },
+      {
+        "id": "24",
         "type": "current-working-dir",
         "color": "brightBlue",
         "metadata": {
@@ -321,7 +333,7 @@
   "powerline": {
     "enabled": false,
     "separators": [
-      ""
+      "\ue0b0"
     ],
     "separatorInvertBackground": [
       false
