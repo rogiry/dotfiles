@@ -12,6 +12,15 @@
 - `macos/defaults.sh` 를 `.chezmoiscripts/` 로 옮기지 말 것 — `chezmoi apply` 마다
   `killall Dock Finder` 가 돌게 된다. 수동 실행이 의도된 설계.
 
+## 문서 / 저장소 전용 파일
+
+- 설명·근거·실측값은 **README 가 아니라 해당 `docs/*.md`** 에 쓴다.
+  README 는 개요·설치·사용법·구조만 유지한다 (예전엔 396줄까지 불었다).
+- 저장소에만 둘 최상위 항목은 **`.chezmoiignore` 에 반드시 추가** — 안 넣으면
+  `~/docs/` 처럼 홈으로 전개된다. **디렉토리는 이름 한 줄이면 하위가 다 빠진다**
+  (기존 `macos/**`, `docs/**` 두 번째 줄은 불필요 — 실측 확인).
+- 확인: `chezmoi managed | grep <이름>` — 비어야 정상. `chezmoi diff` 로는 안 잡힌다.
+
 ## 검증 명령
 
 - `chezmoi diff` — 적용 전 미리보기 / `chezmoi apply -v` — 반영
