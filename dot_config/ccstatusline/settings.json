@@ -3,312 +3,310 @@
   "lines": [
     [
       {
-        "type": "model",
-        "color": "cyan",
-        "rawValue": true,
-        "id": "1"
+        "id": "8d5ef47b-4815-4a08-a275-900d61c68b33",
+        "type": "model"
       },
       {
-        "type": "separator",
-        "id": "2"
+        "id": "2",
+        "type": "separator"
       },
       {
+        "id": "3",
         "type": "context-bar",
-        "color": "blue",
-        "id": "3"
+        "color": "blue"
       },
       {
+        "id": "4",
         "type": "custom-text",
-        "customText": " ",
         "color": "brightBlack",
-        "id": "4"
+        "customText": " "
       },
       {
+        "id": "5",
         "type": "compaction-counter",
-        "color": "yellow",
-        "id": "5"
+        "color": "yellow"
       },
       {
-        "type": "separator",
-        "id": "6"
+        "id": "6",
+        "type": "separator"
       },
       {
+        "id": "7",
         "type": "cache-timer",
         "color": "brightCyan",
         "metadata": {
           "ttlSeconds": "3600"
-        },
-        "id": "7"
+        }
       }
     ],
     [
       {
+        "id": "1",
         "type": "git-origin-owner-repo",
         "color": "brightBlue",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        },
-        "id": "1"
+        }
       },
       {
-        "type": "separator",
-        "id": "2"
+        "id": "2",
+        "type": "separator"
       },
       {
+        "id": "3",
         "type": "git-branch",
         "color": "magenta",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        },
-        "id": "3"
+        }
       },
       {
-        "type": "separator",
-        "id": "4"
+        "id": "4",
+        "type": "separator"
       },
       {
+        "id": "5",
         "type": "git-sha",
         "color": "brightBlack",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        },
-        "id": "5"
+        }
       },
       {
-        "type": "separator",
-        "id": "6"
+        "id": "6",
+        "type": "separator"
       },
       {
+        "id": "7",
         "type": "git-ahead-behind",
         "color": "brightYellow",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        },
-        "id": "7"
+        }
       },
       {
-        "type": "separator",
-        "id": "8"
+        "id": "8",
+        "type": "separator"
       },
       {
+        "id": "9",
         "type": "git-insertions",
         "color": "green",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        },
-        "id": "9"
+        }
       },
       {
+        "id": "10",
         "type": "git-deletions",
         "color": "red",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        },
-        "id": "10"
+        }
       },
       {
-        "type": "separator",
-        "id": "11"
+        "id": "11",
+        "type": "separator"
       },
       {
+        "id": "12",
         "type": "git-staged-files",
         "color": "green",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        },
-        "id": "12"
+        }
       },
       {
+        "id": "13",
         "type": "git-unstaged-files",
         "color": "yellow",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        },
-        "id": "13"
+        }
       },
       {
+        "id": "14",
         "type": "git-untracked-files",
         "color": "red",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        },
-        "id": "14"
+        }
       },
       {
-        "type": "separator",
-        "id": "15"
+        "id": "15",
+        "type": "separator"
       },
       {
+        "id": "16",
         "type": "git-clean-status",
         "color": "brightGreen",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        },
-        "id": "16"
+        }
       },
       {
-        "type": "separator",
-        "id": "17"
+        "id": "17",
+        "type": "separator"
       },
       {
+        "id": "18",
         "type": "git-review",
         "color": "cyan",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        },
-        "id": "18"
+        }
       },
       {
-        "type": "separator",
-        "id": "19"
+        "id": "19",
+        "type": "separator"
       },
       {
+        "id": "20",
         "type": "git-ci-status",
         "color": "brightGreen",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        },
-        "id": "20"
+        }
       },
       {
-        "type": "separator",
-        "id": "21"
+        "id": "21",
+        "type": "separator"
       },
       {
+        "id": "22",
         "type": "current-working-dir",
         "color": "brightBlue",
         "metadata": {
           "abbreviateHome": "true"
-        },
-        "id": "22"
+        }
       }
     ],
     [
       {
+        "id": "1",
         "type": "tokens-input",
-        "color": "brightBlue",
-        "id": "1"
+        "color": "brightBlue"
       },
       {
+        "id": "2",
         "type": "custom-text",
-        "customText": " (",
         "color": "brightBlack",
-        "id": "2"
+        "customText": " ("
       },
       {
+        "id": "3",
         "type": "input-speed",
         "color": "brightBlue",
-        "rawValue": true,
-        "id": "3"
+        "rawValue": true
       },
       {
+        "id": "4",
         "type": "custom-text",
-        "customText": ")",
         "color": "brightBlack",
-        "id": "4"
+        "customText": ")"
       },
       {
-        "type": "separator",
-        "id": "5"
+        "id": "5",
+        "type": "separator"
       },
       {
+        "id": "6",
         "type": "tokens-output",
-        "color": "brightWhite",
-        "id": "6"
+        "color": "brightWhite"
       },
       {
+        "id": "7",
         "type": "custom-text",
-        "customText": " (",
         "color": "brightBlack",
-        "id": "7"
+        "customText": " ("
       },
       {
+        "id": "8",
         "type": "output-speed",
         "color": "cyan",
-        "rawValue": true,
-        "id": "8"
+        "rawValue": true
       },
       {
+        "id": "9",
         "type": "custom-text",
-        "customText": ")",
         "color": "brightBlack",
-        "id": "9"
+        "customText": ")"
       },
       {
-        "type": "separator",
-        "id": "10"
+        "id": "10",
+        "type": "separator"
       },
       {
+        "id": "11",
         "type": "tokens-cached",
-        "color": "brightBlack",
-        "id": "11"
+        "color": "brightBlack"
       }
     ],
     [
       {
+        "id": "1",
         "type": "session-usage",
-        "color": "green",
-        "id": "1"
+        "color": "green"
       },
       {
+        "id": "2",
         "type": "custom-text",
-        "customText": " (",
         "color": "brightBlack",
-        "id": "2"
+        "customText": " ("
       },
       {
+        "id": "3",
         "type": "reset-timer",
         "color": "brightBlack",
-        "rawValue": true,
-        "id": "3"
+        "rawValue": true
       },
       {
+        "id": "4",
         "type": "custom-text",
-        "customText": ")",
         "color": "brightBlack",
-        "id": "4"
+        "customText": ")"
       },
       {
-        "type": "separator",
-        "id": "5"
+        "id": "5",
+        "type": "separator"
       },
       {
+        "id": "6",
         "type": "weekly-usage",
-        "color": "green",
-        "id": "6"
+        "color": "green"
       },
       {
-        "type": "separator",
-        "id": "7"
+        "id": "7",
+        "type": "separator"
       },
       {
+        "id": "8",
         "type": "weekly-opus-usage",
-        "color": "brightGreen",
-        "id": "8"
+        "color": "brightGreen"
       }
     ]
   ],
@@ -323,7 +321,7 @@
   "powerline": {
     "enabled": false,
     "separators": [
-      "\ue0b0"
+      ""
     ],
     "separatorInvertBackground": [
       false
