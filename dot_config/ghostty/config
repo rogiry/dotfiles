@@ -5,7 +5,7 @@
 # starship 프롬프트와 ccstatusline 의 아이콘/파워라인 글리프에 Nerd Font 필요.
 # brew install --cask font-meslo-lg-nerd-font
 font-family = "MesloLGS Nerd Font"
-font-size = 14
+font-size = 12
 
 # ── 테마 / 외형 ──────────────────────────────────────────────────
 theme = "Nord"

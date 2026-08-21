@@ -1,0 +1,79 @@
+# ~/.zshrc.local — 이 머신 전용 설정
+#
+# 이 파일은 dotfiles 저장소가 관리하지 않는다.
+# 최초 1회만 이 템플릿으로 생성되고, 이후 `chezmoi apply` 는 절대 건드리지 않는다.
+# 여기서 뭘 고치든 저장소로 올라가지도, 덮어써지지도 않는다.
+#
+# .zshrc 의 맨 마지막(13번 섹션)에서 읽으므로, 여기서 정의한 것이 항상 이긴다.
+#
+# 편집 후 반영:  exec zsh   (또는 alias `reload`)
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  시크릿 (API 키 등)
+# ═══════════════════════════════════════════════════════════════════
+#
+# ⚠ 키 '값'을 이 파일에 직접 쓰지 말 것.
+#   이 파일은 저장소엔 안 올라가지만 디스크에는 평문으로 남는다.
+#   값은 macOS 키체인에 두고, 셸이 시작할 때 꺼내 쓴다.
+#
+# ── 1단계: 키체인에 저장 ──────────────────────────────────────────
+#
+#   security add-generic-password -s anthropic -a "$USER" -w -U
+#
+#   -s  서비스 이름 (원하는 대로 정한다)
+#   -a  계정 — "$USER" 로 통일하면 아래 _kc_export 가 알아서 찾는다
+#   -w  값. 뒤를 비우면 프롬프트가 떠서 입력받는다 → 셸 히스토리에 안 남음
+#   -U  이미 있으면 덮어쓰기 (없으면 "이미 존재" 에러)
+#
+# ── 2단계: 아래 줄의 주석을 해제 ──────────────────────────────────
+#
+#   _kc_export <환경변수 이름>  <키체인 서비스 이름>
+#
+# _kc_export ANTHROPIC_API_KEY  anthropic
+# _kc_export OPENAI_API_KEY     openai
+# _kc_export GITHUB_TOKEN       github
+# _kc_export TAVILY_API_KEY     tavily
+#
+# ── 확인 / 삭제 ───────────────────────────────────────────────────
+#
+#   security find-generic-password -s anthropic -a "$USER" -w      # 값 출력
+#   security find-generic-password -s anthropic -a "$USER" >/dev/null && echo 있음
+#   security delete-generic-password -s anthropic -a "$USER"       # 삭제
+#
+# ── 값을 화면에 안 띄우고 확인 ────────────────────────────────────
+#
+#   _kc anthropic | cut -c1-6        # 앞 6자만
+#   _kc anthropic | wc -c            # 길이만
+#
+# ── 키가 많아 셸 시작이 느껴지면 (조회당 약 10ms) ─────────────────
+#   export 대신 필요할 때만 부르는 함수로 바꾼다:
+#
+# anthropic_key() { _kc anthropic; }
+#   사용: ANTHROPIC_API_KEY=$(anthropic_key) some-command
+#
+# ── 프로젝트별로 다른 키가 필요하면 ───────────────────────────────
+#   전역 export 대신 그 프로젝트의 mise.toml 에 넣는다:
+#
+#   [env]
+#   ANTHROPIC_API_KEY = "{{ exec(command='security find-generic-password -s anthropic-work -a $USER -w') }}"
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  이 머신 전용 alias / 환경변수
+# ═══════════════════════════════════════════════════════════════════
+
+# Claude Code: 권한 확인을 전부 건너뛰고 시작한다.
+# 공식 도움말 권장 범위는 "인터넷 없는 샌드박스" — 신뢰하는 디렉토리에서만.
+# 확인 프롬프트를 켜두고 세션 중에 토글하려면 아래를 대신 쓴다:
+#   alias c='claude --allow-dangerously-skip-permissions'
+alias c='claude --dangerously-skip-permissions'
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  주의
+# ═══════════════════════════════════════════════════════════════════
+#
+# 위젯을 감싸는 플러그인(자동완성 · 문법 하이라이팅 계열)은 여기서 source 하지 말 것.
+# 이 파일은 zsh-syntax-highlighting(12번 섹션)보다 뒤에 읽혀서 충돌한다.
+# 그런 건 저장소의 dot_zshrc 본문에 넣는다.

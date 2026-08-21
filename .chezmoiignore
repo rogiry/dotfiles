@@ -6,6 +6,6 @@ bootstrap.sh
 macos
 macos/**
 
-# 머신 전용 로컬 오버라이드 — 저장소가 관리하지 않는다.
-# .zshrc 13번 섹션이 있으면 읽어들인다. 없어도 정상 동작.
-.zshrc.local
+# 주의: .zshrc.local 은 여기 넣지 않는다.
+# create_dot_zshrc.local 로 "없으면 최초 1회만 생성, 이후 절대 안 건드림"
+# 동작을 얻는다. ignore 에 넣으면 그 생성이 아예 일어나지 않는다.
