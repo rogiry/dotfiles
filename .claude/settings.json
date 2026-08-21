@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" 2>/dev/null || exit 0; [ -f tests/validate.sh ] || exit 0; out=$(bash tests/validate.sh 2>&1) && exit 0; printf \"%s\" \"$out\" | grep -E \"FAIL|검증 실패\" | head -20 | jq -Rs '{decision:\"block\", reason:(\"로컬 검증 실패 — bash tests/validate.sh 로 재현됩니다:\\n\" + .)}'",
+            "timeout": 120,
+            "statusMessage": "저장소 검증 중…"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -125,8 +125,10 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 │   ├── defaults.sh              Dock / 키보드 / 트랙패드 설정 적용
 │   └── capture.sh               현재 맥 상태 덤프 (drift 확인용)
 ├── tests/
+│   ├── validate.sh              저장소 전체 검증 (CI·Stop 훅이 함께 쓴다)
 │   └── git-status-bits.test.sh  상태줄 스크립트 동작 테스트
-├── .github/workflows/ci.yml     CI (아래 "검증" 과 같은 검사)
+├── .github/workflows/ci.yml     CI — tests/validate.sh 를 돌린다
+├── .claude/settings.json        Stop 훅 — 같은 스크립트를 로컬에서 돌린다
 └── docs/                        세부 문서
 ```
 
@@ -139,6 +141,7 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 |---|---|
 | `chezmoi diff` | 적용될 변경 |
 | `script -q /dev/null zsh -lic 'exit'` | 셸이 경고 없이 로드되는지 |
+| **`bash tests/validate.sh`** | **아래를 전부 — CI 와 같은 스크립트** |
 | `bash tests/git-status-bits.test.sh` | 상태줄 git 위젯 동작 |
 | `shellcheck -S warning **/*.sh` | 셸 스크립트 정적 분석 |
 | `brew bundle check --verbose --file=Brewfile` | 누락된 패키지 |
@@ -147,7 +150,9 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 > `zsh -lic` 만 쓰면 pty 가 없어 `can't change option: zle` 가짜 경고가 뜬다.
 > 반드시 `script -q /dev/null` 로 감싼다.
 
-push·PR 마다 [CI](.github/workflows/ci.yml) 가 같은 검사를 돌린다.
+push·PR 마다 [CI](.github/workflows/ci.yml) 가 **같은 `tests/validate.sh`** 를 돌리고,
+로컬에서도 Claude Code 의 Stop 훅([.claude/settings.json](.claude/settings.json))이 같은 것을 돌린다.
+검사 내용을 한 파일에만 적어두어 "로컬은 통과하는데 CI 만 빨간불" 이 생기지 않게 했다.
 **`chezmoi apply` 는 CI 에서 실행하지 않는다** — `run_` 스크립트가 brew bundle 과
 Claude Code 설치를 시도해 느리고 불안정하다. 대신 `chezmoi archive` 로
 "적용될 결과"를 전부 렌더해 템플릿이 깨지지 않았는지 본다.
