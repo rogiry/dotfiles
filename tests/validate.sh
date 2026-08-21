@@ -16,8 +16,10 @@ skip() { printf '  skip  %s — %s 없음\n' "$1" "$2"; }
 sec()  { printf '\n== %s\n' "$1"; }
 
 SH_FILES=(bootstrap.sh macos/*.sh .chezmoiscripts/*.sh tests/*.sh
-          dot_local/bin/executable_git-status-bits)
-ZSH_FILES=(dot_zshrc dot_zprofile create_dot_zshrc.local)
+          dot_local/bin/executable_git-status-bits
+          dot_local/bin/executable_mise-completions)
+ZSH_FILES=(dot_zshrc dot_zprofile create_dot_zshrc.local
+           dot_local/share/zsh/functions/_mise_comp_dispatch)
 
 sec "셸 구문"
 for f in "${SH_FILES[@]}"; do
@@ -49,11 +51,34 @@ else
   skip Brewfile ruby
 fi
 
+sec "mise 설정"
+if command -v mise >/dev/null 2>&1; then
+  # TOML 구문 + 훅 키가 살아있는지. 훅이 깨지면 새로 깐 툴의 완성이
+  # 조용히 안 생긴다 — 에러가 안 나므로 눈치채기 어렵다.
+  if out=$(mise config get -f dot_config/mise/config.toml hooks.postinstall 2>&1); then
+    case "$out" in
+      *mise-completions*) ok "postinstall 훅" ;;
+      *) bad "postinstall 훅이 mise-completions 를 안 부른다: $out" ;;
+    esac
+  else
+    bad "config.toml 파싱"; printf '%s\n' "$out"
+  fi
+else
+  skip "mise 설정" mise
+fi
+
 sec "JSON"
 while IFS= read -r f; do
   if python3 -c "import json,sys;json.load(open(sys.argv[1]))" "$f" 2>/dev/null; then ok "$f"
   else bad "$f"; python3 -c "import json,sys;json.load(open(sys.argv[1]))" "$f"; fi
 done < <(find . -name '*.json' -not -path './.git/*' | sort)
+
+sec "mise 완성 디스패처 동작"
+if out=$(bash tests/mise-completions.test.sh 2>&1); then
+  ok "$(printf '%s' "$out" | tail -1)"
+else
+  bad "테스트 실패"; printf '%s\n' "$out" | grep -E 'FAIL|실패'
+fi
 
 sec "git-status-bits 동작"
 if out=$(bash tests/git-status-bits.test.sh 2>&1); then
@@ -76,7 +101,7 @@ if command -v chezmoi >/dev/null 2>&1; then
          --format=tar 2>/dev/null | tar -xf - -C "$OUT"; then
       ok "모든 템플릿 렌더"
       # .chezmoiscripts/*.tmpl 은 {{ }} 때문에 렌더 전엔 구문 검사가 안 된다.
-      for f in "$OUT"/.chezmoiscripts/*.sh "$OUT"/.local/bin/git-status-bits; do
+      for f in "$OUT"/.chezmoiscripts/*.sh "$OUT"/.local/bin/*; do
         [ -f "$f" ] || continue
         if bash -n "$f" 2>/dev/null; then ok "렌더됨: ${f#"$OUT"/}"; else bad "렌더됨: ${f#"$OUT"/}"; fi
       done

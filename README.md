@@ -86,8 +86,8 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 
 | 문서 | 내용 |
 |---|---|
-| [docs/shell.md](docs/shell.md) | `.zshrc` 로드 순서, alias 정책, 로컬 오버라이드 |
-| [docs/runtimes.md](docs/runtimes.md) | mise 백엔드 정책 (core > aqua, asdf/vfox 차단) |
+| [docs/shell.md](docs/shell.md) | `.zshrc` 로드 순서, 탭 완성(프로젝트 버전 추종), alias 정책, 로컬 오버라이드 |
+| [docs/runtimes.md](docs/runtimes.md) | mise 백엔드 정책 (core > aqua, asdf/vfox 차단), 툴 완성 생성 |
 | [docs/macos.md](docs/macos.md) | 시스템 기본값 스크립트와 drift 확인 |
 | [docs/statusline.md](docs/statusline.md) | Claude Code 상태줄 구성과 `git-status-bits` |
 | [docs/secrets.md](docs/secrets.md) | API 키를 macOS 키체인으로 다루는 방식 |
@@ -107,7 +107,7 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 ├── .chezmoiscripts/
 │   ├── run_onchange_before_10-brew.sh.tmpl    Brewfile 변경 시 brew bundle
 │   ├── run_onchange_after_20-mise.sh.tmpl     mise 설정 변경 시 런타임 설치
-│   ├── run_once_after_30-completions.sh       완성 정의 설치 (최초 1회)
+│   ├── run_onchange_after_30-completions.sh.tmpl  완성 스텁 생성 + 캐시 예열
 │   └── run_once_after_40-claude-code.sh       Claude Code CLI 설치 (없을 때만)
 ├── dot_zshrc                    →  ~/.zshrc
 ├── dot_zprofile                 →  ~/.zprofile
@@ -119,14 +119,19 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 │   ├── mise/config.toml         →  ~/.config/mise/config.toml
 │   ├── bat/config               →  ~/.config/bat/config
 │   └── ccstatusline/settings.json  →  ~/.config/ccstatusline/settings.json
-├── dot_local/bin/
-│   └── executable_git-status-bits  →  ~/.local/bin/git-status-bits
+├── dot_local/
+│   ├── bin/
+│   │   ├── executable_git-status-bits   →  ~/.local/bin/git-status-bits
+│   │   └── executable_mise-completions  →  ~/.local/bin/mise-completions
+│   └── share/zsh/functions/
+│       └── _mise_comp_dispatch          활성 mise 버전의 완성으로 위임
 ├── macos/
 │   ├── defaults.sh              Dock / 키보드 / 트랙패드 설정 적용
 │   └── capture.sh               현재 맥 상태 덤프 (drift 확인용)
 ├── tests/
 │   ├── validate.sh              저장소 전체 검증 (CI·Stop 훅이 함께 쓴다)
-│   └── git-status-bits.test.sh  상태줄 스크립트 동작 테스트
+│   ├── git-status-bits.test.sh  상태줄 스크립트 동작 테스트
+│   └── mise-completions.test.sh 완성 디스패처 동작 테스트
 ├── .github/workflows/ci.yml     CI — tests/validate.sh 를 돌린다
 ├── .claude/settings.json        Stop 훅 — 같은 스크립트를 로컬에서 돌린다
 └── docs/                        세부 문서
@@ -143,6 +148,7 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 | `script -q /dev/null zsh -lic 'exit'` | 셸이 경고 없이 로드되는지 |
 | **`bash tests/validate.sh`** | **아래를 전부 — CI 와 같은 스크립트** |
 | `bash tests/git-status-bits.test.sh` | 상태줄 git 위젯 동작 |
+| `bash tests/mise-completions.test.sh` | 완성 디스패처 (버전 탐지·갈아타기) |
 | `shellcheck -S warning **/*.sh` | 셸 스크립트 정적 분석 |
 | `brew bundle check --verbose --file=Brewfile` | 누락된 패키지 |
 | `bash macos/capture.sh` | 현재 맥 설정 (`macos/defaults.sh` 와 대조) |

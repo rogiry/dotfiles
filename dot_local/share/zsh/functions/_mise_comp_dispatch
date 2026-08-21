@@ -1,0 +1,109 @@
+#autoload
+# mise 가 활성화한 '지금 이 디렉토리의' 툴 버전에 맞는 완성 정의를 골라 쓴다.
+#
+# zsh 가 기본 제공하는 _npm 과 같은 위임형이다. 다만 _npm 은 TAB 마다
+# `npm completion` 서브프로세스를 돌리는데(실측 63ms), 이쪽은 버전별로 캐시해
+# 두고 버전이 바뀔 때만 다시 읽는다 (_uv 6978줄 source 가 33ms, 그 뒤로는 0).
+#
+#   _mise_comp_dispatch <mise 툴 이름> <바이너리> "$@"
+#
+# 호출하는 쪽은 생성기가 만든 두 줄짜리 스텁이다:
+#   ~/.local/share/zsh/site-functions/_uvx
+#     #compdef uvx
+#     _mise_comp_dispatch uv uvx "$@"
+#
+# 캐시: ${XDG_CACHE_HOME:-~/.cache}/zsh/mise-completions/<바이너리>@<버전>
+#       없으면 ~/.local/bin/mise-completions --emit 이 만든다 (버전당 최초 1회).
+
+emulate -L zsh
+setopt local_options extended_glob no_nomatch
+
+local tool=$1 bin=$2
+shift 2
+[[ -n $tool && -n $bin ]] || return 1
+
+local cachedir=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/mise-completions
+local ver='' d
+
+# ── 지금 활성화된 버전 ──────────────────────────────────────────────
+# 1) PATH 에서 뽑는다 — 서브프로세스 0개.
+#    경로 모양이 툴마다 다르다. bin/ 이 있는 것도 있고 없는 것도 있다:
+#      installs/bun/latest/bin
+#      installs/uv/0.9.0/uv-aarch64-apple-darwin      ← bin/ 없음
+#    그래서 뒤쪽을 고정하지 말고 installs/<툴>/ 바로 다음 조각을 꺼낸다.
+#    latest·lts 는 심볼릭이라 :A 로 먼저 풀어야 진짜 버전이 나온다
+#    (installs/bun/latest -> ./1.3.14).
+for d in $path; do
+  if [[ $d == */mise/installs/$tool/* ]]; then
+    d=${d:A}
+    ver=${${d#*/mise/installs/$tool/}%%/*}
+    break
+  fi
+done
+
+# 2) shims 로만 잡히는 툴은 mise 에게 묻는다 (약 12ms).
+#    버전이 안 정해져 있으면 아무것도 안 찍고 경고만 stderr 로 낸다.
+if [[ -z $ver ]] && (( $+commands[mise] )); then
+  ver=$(mise current $tool 2>/dev/null)
+fi
+
+# 3) 그래도 모르면 캐시에 있는 것 중 가장 최근 것으로 버틴다.
+if [[ -z $ver ]]; then
+  local -a cached=( $cachedir/${bin}@*(N.om) )
+  (( $#cached )) && ver=${cached[1]##*@}
+fi
+
+[[ -n $ver ]] || return 1
+
+# ── 필요할 때만 로드 ────────────────────────────────────────────────
+typeset -gA _mise_comp_loaded          # 바이너리 -> 이 셸에 지금 로드된 버전
+
+if [[ ${_mise_comp_loaded[$bin]-} != $ver ]]; then
+  local cache=$cachedir/${bin}@${ver}
+
+  if [[ ! -s $cache ]]; then
+    local gen=$HOME/.local/bin/mise-completions
+    [[ -x $gen ]] || return 1
+    mkdir -p $cachedir 2>/dev/null || return 1
+    local tmp=$cache.$$
+    if $gen --emit $tool $bin $ver >$tmp 2>/dev/null && [[ -s $tmp ]]; then
+      mv -f $tmp $cache
+    else
+      rm -f $tmp
+      # 못 만들었으면 완성을 통째로 잃는 대신 캐시에 있는 다른 버전으로 버틴다.
+      # (생성기가 아직 안 깔렸거나, 오프라인이거나, 그 버전이 사라진 경우)
+      local -a other=( $cachedir/${bin}@*(N.om) )
+      (( $#other )) || return 1
+      cache=$other[1]
+      ver=${cache:t}
+      ver=${ver##*@}
+      [[ ${_mise_comp_loaded[$bin]-} == $ver ]] && { _mise_comp_fn_$bin "$@"; return }
+    fi
+  fi
+
+  # ⚠ 갈아타기 전에 이전 버전의 함수를 먼저 지운다.
+  # clap 이 만든 완성 스크립트는 헬퍼를 이렇게 감싼다:
+  #     (( $+functions[_uv_commands] )) || _uv_commands() { ... }
+  # 이미 정의돼 있으면 **다시 정의하지 않는다.** 그래서 안 지우고 source 하면
+  # 진입 함수 _uv 만 바뀌고 헬퍼는 이전 버전 것이 남는다. 그 헬퍼 중에
+  # _uv_commands 가 최상위 서브커맨드 목록이라, 0.12.5 를 쓰던 셸에서
+  # 0.9.0 프로젝트로 가도 `uv wo` 가 workspace(0.12.5 전용)로 완성됐다.
+  # 이름 규칙은 _<바이너리> 와 _<바이너리>_* 다 (_uvx 는 안 걸린다).
+  unfunction -m "_${bin}" "_${bin}_*" 2>/dev/null
+
+  # 익명 함수 안에서 source 한다. 완성 스크립트 끝에는 보통
+  #     if [[ $funcstack[1] = _uv ]]; then _uv "$@"; else compdef _uv uv; fi
+  # 같은 분기가 붙어 있는데, 여기서 바로 실행돼 버리면 완성이 두 번 돈다.
+  # 익명 함수 안에서는 funcstack[1] 이 (anon) 이고 $@ 도 비어서 compdef 로 간다.
+  () { source $cache } || return 1
+  (( $+functions[_$bin] )) || return 1
+
+  # source 가 _<바이너리> 를 버전 전용 함수로 덮어썼다. 진짜 함수는 따로
+  # 보관하고 _<바이너리> 는 디스패처로 되돌린다 — 안 그러면 다음 프로젝트에서
+  # 버전이 바뀌어도 이 함수가 그대로 남아 갈아타지 못한다.
+  functions[_mise_comp_fn_$bin]=${functions[_$bin]}
+  functions[_$bin]="_mise_comp_dispatch ${(q)tool} ${(q)bin} \"\$@\""
+  _mise_comp_loaded[$bin]=$ver
+fi
+
+_mise_comp_fn_$bin "$@"

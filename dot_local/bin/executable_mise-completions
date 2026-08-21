@@ -1,0 +1,267 @@
+#!/usr/bin/env bash
+# mise 로 설치한 툴들의 zsh 완성을 준비한다.
+#
+#   mise-completions                    스텁 재생성 + 캐시 예열 (요약 한 줄)
+#   mise-completions -v                 툴별 결과까지 출력
+#   mise-completions -q                 조용히 (mise 훅에서 사용)
+#   mise-completions --emit T B V       툴 T 의 바이너리 B, 버전 V 의
+#                                       완성 스크립트를 stdout 으로 (디스패처용)
+#
+# ── 왜 필요한가 ─────────────────────────────────────────────────────
+# mise 는 툴의 '바이너리'만 깐다. brew 처럼 완성 스크립트를
+# share/zsh/site-functions 로 옮겨주는 단계가 없어서, mise 로 넣은
+# bun/uv/deno 는 탭 완성이 통째로 없다. `mise` 자신의 완성(_mise)은
+# brew 가 깔아준 것이라 "mise 는 되는데 mise 로 깐 툴은 안 된다" 로 보인다.
+#
+# ── 무엇을 만드나 ───────────────────────────────────────────────────
+# 완성 정의를 직접 깔지 않고 **두 줄짜리 스텁**을 깐다:
+#
+#   ~/.local/share/zsh/site-functions/_uvx
+#     #compdef uvx
+#     _mise_comp_dispatch uv uvx "$@"
+#
+# 실제 정의는 _mise_comp_dispatch 가 '지금 활성화된 버전'에 맞춰 캐시에서
+# 골라 쓴다 (~/.local/share/zsh/functions/_mise_comp_dispatch).
+# 프로젝트마다 툴 버전이 다르면 완성도 따라 바뀐다.
+#
+# 이 스크립트는 스텁 디렉토리를 통째로 소유한다 (매번 갈아엎으므로 손대지 말 것).
+# brew prefix 아래에 쓰지 않는 이유: brew 가 관리하는 트리라 재설치/cleanup 때
+# 사라지고 `brew doctor` 가 남의 파일이라고 경고한다.
+#
+# ── 언제 도는가 ─────────────────────────────────────────────────────
+# 1) dot_config/mise/config.toml 의 [hooks] postinstall
+#    → mise install / mise use 로 툴이 깔릴 때마다
+# 2) .chezmoiscripts/run_onchange_after_30-completions.sh
+#    → 이 스크립트가 바뀐 chezmoi apply 에서
+# 3) --emit: 캐시에 없는 버전을 만나면 디스패처가 TAB 시점에 (버전당 1회)
+set -uo pipefail
+
+# 재진입 방지. mise exec 가 (이론상) 설치를 유발하면 postinstall 훅이
+# 이 스크립트를 다시 부를 수 있다.
+[ -n "${MISE_COMPLETIONS_RUNNING:-}" ] && exit 0
+export MISE_COMPLETIONS_RUNNING=1
+
+DEST="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/site-functions"
+CACHEDIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/mise-completions"
+ZCOMPDUMP="${ZDOTDIR:-$HOME}/.zcompdump"
+
+# ── 완성 스크립트를 stdout 으로 뱉는 명령 ───────────────────────────
+# "바이너리<TAB>인자" 줄들. 한 툴이 바이너리를 여러 개 깔면 (uv → uvx)
+# 줄을 더 쓴다. 여기 없는 툴은 동봉 파일 → PROBES 순으로 넘어간다.
+generators_for() {
+  case "$1" in
+    bun)      printf 'bun\tcompletions\n' ;;
+    uv)       printf 'uv\tgenerate-shell-completion zsh\nuvx\t--generate-shell-completion zsh\n' ;;
+    deno)     printf 'deno\tcompletions zsh\n' ;;
+    pnpm)     printf 'pnpm\tcompletion zsh\n' ;;
+    rustup)   printf 'rustup\tcompletions zsh\n' ;;
+    poetry)   printf 'poetry\tcompletions zsh\n' ;;
+    just)     printf 'just\t--completions zsh\n' ;;
+    starship) printf 'starship\tcompletions zsh\n' ;;
+    *)        return 1 ;;
+  esac
+}
+
+# 표에 없는 툴에 시도해 볼 관용적인 형태. 출력이 zsh 완성처럼 생기지
+# 않으면 버리므로, 엉뚱한 서브커맨드가 성공해도 파일이 남지 않는다.
+PROBES='completions zsh
+completion zsh
+--completion zsh
+generate-shell-completion zsh
+completions --shell zsh'
+
+# ── 시간 제한 ───────────────────────────────────────────────────────
+# 이 맥에는 GNU coreutils 가 없어 timeout(1) 이 없다. 프로브는 결국
+# '모르는 서브커맨드'를 실행하는 것이라 멈춰 서는 경우를 대비해야 한다.
+run_limited() {
+  local secs=$1 out=$2
+  shift 2
+  "$@" </dev/null >"$out" 2>/dev/null &
+  local pid=$! waited=0
+  while kill -0 "$pid" 2>/dev/null; do
+    if [ "$waited" -ge $((secs * 10)) ]; then
+      kill -9 "$pid" 2>/dev/null
+      wait "$pid" 2>/dev/null
+      return 124
+    fi
+    sleep 0.1
+    waited=$((waited + 1))
+  done
+  wait "$pid"
+}
+
+# zsh 완성 스크립트인지 — #compdef 헤더나 compdef 호출이 있어야 한다.
+# npm 처럼 bash 완성을 뱉는 툴을 여기서 걸러낸다.
+looks_like_zsh_completion() {
+  [ -s "$1" ] && head -n 40 "$1" | grep -qE '^#compdef|compdef '
+}
+
+# (툴, 버전, 바이너리) 의 완성 스크립트를 파일 하나로.
+# 표 → 툴이 동봉한 파일 → 관용 형태 탐색 순으로 시도한다.
+resolve_one() {
+  local tool=$1 ver=$2 bin=$3 out=$4
+  local gens b args root src probe
+
+  if gens=$(generators_for "$tool"); then
+    while IFS=$'\t' read -r b args; do
+      [ "$b" = "$bin" ] || continue
+      # shellcheck disable=SC2086  # args 는 일부러 단어 분리한다
+      if run_limited 20 "$out" mise exec "$tool@$ver" -- "$bin" $args \
+         && looks_like_zsh_completion "$out"; then
+        return 0
+      fi
+      rm -f "$out"
+      return 1        # 표에 있는 툴이면 표가 결론이다. 탐색으로 안 내려간다.
+    done <<< "$gens"
+  fi
+
+  root=$(mise where "$tool@$ver" 2>/dev/null) || root=""
+  if [ -n "$root" ] && [ -d "$root" ]; then
+    # maxdepth 4: share/zsh/site-functions/_x 까지. 더 파면 python 의
+    # lib 트리 전체를 훑게 된다.
+    src=$(find "$root" -maxdepth 4 -type f -name "_$bin" \
+            \( -path '*/zsh/site-functions/*' -o -path '*/completions/*' \) 2>/dev/null | head -1)
+    if [ -n "$src" ] && cp "$src" "$out" 2>/dev/null; then
+      return 0
+    fi
+  fi
+
+  while IFS= read -r probe; do
+    # shellcheck disable=SC2086  # probe 는 일부러 단어 분리한다
+    if run_limited 20 "$out" mise exec "$tool@$ver" -- "$bin" $probe \
+       && looks_like_zsh_completion "$out"; then
+      return 0
+    fi
+    rm -f "$out"
+  done <<< "$PROBES"
+
+  return 1
+}
+
+# ── --emit: 디스패처가 캐시 미스일 때 부른다 ────────────────────────
+if [ "${1:-}" = "--emit" ]; then
+  [ $# -eq 4 ] || { printf '사용법: mise-completions --emit <툴> <바이너리> <버전>\n' >&2; exit 2; }
+  tmp=$(mktemp) || exit 1
+  trap 'rm -f "$tmp"' EXIT
+  resolve_one "$2" "$4" "$3" "$tmp" || exit 1
+  cat "$tmp"
+  exit 0
+fi
+
+verbosity=summary
+case "${1:-}" in
+  -v|--verbose) verbosity=verbose ;;
+  -q|--quiet)   verbosity=quiet ;;
+  -h|--help)    sed -n '4,9p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  "")           ;;
+  *)            printf '알 수 없는 인자: %s\n' "$1" >&2; exit 2 ;;
+esac
+
+say()  { [ "$verbosity" = quiet ] || printf '%s\n' "$*"; return 0; }
+note() { [ "$verbosity" = verbose ] && printf '  %s\n' "$*"; return 0; }
+
+command -v mise >/dev/null 2>&1 || { say "mise 없음 — 건너뜀"; exit 0; }
+command -v jq   >/dev/null 2>&1 || { printf 'jq 가 필요하다 (Brewfile 에 있다)\n' >&2; exit 1; }
+
+# ── 툴 목록 ─────────────────────────────────────────────────────────
+# 버전이 여러 개면 active 를, 없으면 마지막(=가장 높은 버전) 것을 쓴다.
+#
+# -C "$HOME" 가 핵심이다. active 는 cwd 에 달려 있는데, 이 스크립트는
+# postinstall 훅으로 '그때 있던 프로젝트 디렉토리'에서 불린다. 그냥 두면
+# 예열하는 버전이 매번 달라진다. $HOME 기준으로 고정해서 "전역 config 가
+# 정한 버전"을 예열한다. 프로젝트 버전은 디스패처가 TAB 시점에 처리한다.
+if ! tools=$(mise -C "$HOME" ls --installed --json 2>/dev/null | jq -r '
+      to_entries[]
+      | .key as $tool
+      | (.value | map(select(.installed == true))) as $vs
+      | ((($vs | map(select(.active == true)) | last) // ($vs | last)) as $v
+         | select($v != null)
+         | [$tool, $v.version] | @tsv)
+    '); then
+  printf 'mise 툴 목록을 읽지 못했다\n' >&2
+  exit 1
+fi
+
+# 시도할 바이너리 이름들: 표에 있으면 표, 없으면 동봉 파일, 그것도 없으면 툴 이름.
+bins_for() {
+  local tool=$1 ver=$2 gens root found
+  if gens=$(generators_for "$tool"); then
+    printf '%s\n' "$gens" | cut -f1
+    return 0
+  fi
+  root=$(mise where "$tool@$ver" 2>/dev/null) || root=""
+  if [ -n "$root" ] && [ -d "$root" ]; then
+    found=$(find "$root" -maxdepth 4 -type f \
+              \( -path '*/zsh/site-functions/_*' -o -path '*/completions/_*' \) 2>/dev/null \
+            | sed 's#.*/_##')
+    if [ -n "$found" ]; then printf '%s\n' "$found"; return 0; fi
+  fi
+  printf '%s\n' "$tool"
+}
+
+mkdir -p "$DEST" "$CACHEDIR"
+staging=$(mktemp -d "$DEST.XXXXXX") || exit 1   # 같은 파일시스템 → mv 가 원자적
+trap 'rm -rf "$staging"' EXIT
+
+generated=''
+
+while IFS=$'\t' read -r tool version; do
+  [ -n "$tool" ] || continue
+  hit=0
+
+  while IFS= read -r bin; do
+    [ -n "$bin" ] || continue
+    cache="$CACHEDIR/${bin}@${version}"
+
+    # 캐시 예열 — 이미 있으면 그대로 둔다 (버전당 한 번만 만들면 된다).
+    if [ ! -s "$cache" ]; then
+      tmp="$cache.$$"
+      if resolve_one "$tool" "$version" "$bin" "$tmp"; then
+        mv -f "$tmp" "$cache"
+      else
+        rm -f "$tmp"
+        [ "$bin" = "$tool" ] || note "$tool: $bin 완성 없음"
+        continue
+      fi
+    fi
+
+    # 스텁. 실제 정의는 디스패처가 활성 버전에 맞춰 고른다.
+    {
+      printf '#compdef %s\n' "$bin"
+      printf '# 자동 생성 (mise-completions). 활성화된 mise 버전의 완성으로 넘긴다.\n'
+      printf '_mise_comp_dispatch %s %s "$@"\n' "$tool" "$bin"
+    } > "$staging/_$bin"
+
+    generated="$generated _$bin"
+    hit=1
+    note "$tool: _$bin → 디스패처 (캐시 ${bin}@${version})"
+  done < <(bins_for "$tool" "$version")
+
+  [ "$hit" -eq 1 ] || note "$tool: 완성 정의 없음"
+done <<< "$tools"
+
+# ── 교체 ────────────────────────────────────────────────────────────
+changed=1
+if diff -rq "$DEST" "$staging" >/dev/null 2>&1; then
+  changed=0
+fi
+
+chmod -R go-w "$staging" 2>/dev/null   # compinit 의 insecure directories 경고 방지
+rm -rf "$DEST"
+mv "$staging" "$DEST"
+trap - EXIT
+
+# compinit 은 -C 로 뜨면 새 파일을 알아채지 못한다. 덤프를 지워야 다음 셸에서
+# 다시 만든다 (dot_zshrc 4번 섹션). 스텁은 툴이 늘거나 줄 때만 바뀌므로
+# 버전만 달라진 경우엔 덤프를 건드리지 않는다.
+[ "$changed" -eq 1 ] && rm -f "$ZCOMPDUMP" "$ZCOMPDUMP.zwc"
+
+if [ -z "$generated" ]; then
+  say "zsh 완성: 만들 것 없음"
+else
+  pretty=$DEST
+  # shellcheck disable=SC2088  # 출력용 문자열이라 ~ 를 일부러 그대로 둔다
+  case "$pretty" in "$HOME"/*) pretty="~/${pretty#"$HOME"/}" ;; esac
+  # shellcheck disable=SC2086  # 단어 분리로 목록을 만든다
+  say "zsh 완성: $(printf '%s\n' $generated | sort -u | tr '\n' ' ')→ $pretty (활성 버전 위임)"
+fi

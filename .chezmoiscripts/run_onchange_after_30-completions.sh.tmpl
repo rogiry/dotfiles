@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# 셸 완성 준비 — 스텁 생성 + 자주 쓰는 버전의 캐시 예열.
+#
+# run_once 가 아니라 run_onchange 인 이유: 생성기가 바뀌면 스텁 형식도 바뀔 수
+# 있어 다시 돌아야 한다. 평상시 재생성은 mise 의 postinstall 훅이 맡는다
+# (dot_config/mise/config.toml).
+#
+# 위임 로직(_mise_comp_dispatch)은 그냥 관리 대상 파일이라 chezmoi 가 직접
+# 반영한다 — 해시로 추적할 필요가 없다.
+#
+# 생성기 해시: {{ include "dot_local/bin/executable_mise-completions" | sha256sum }}
+set -euo pipefail
+
+BREW_PREFIX="$(brew --prefix 2>/dev/null || echo /opt/homebrew)"
+
+# compinit 이 "insecure directories" 경고를 내는 것을 예방
+if [[ -d "$BREW_PREFIX/share/zsh" ]]; then
+  chmod -R go-w "$BREW_PREFIX/share/zsh" 2>/dev/null || true
+fi
+
+# 완성 캐시 디렉토리 (dot_zshrc 4번 섹션의 zstyle cache-path)
+mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompcache"
+
+# mise 툴별 스텁 생성 + 캐시 예열 (스텁 목록이 바뀌면 zcompdump 도 무효화)
+echo "==> mise 툴 완성 준비…"
+"$HOME/.local/bin/mise-completions" || true
+
+echo "==> 완료. 새 셸을 열면 완성이 적용됩니다."
