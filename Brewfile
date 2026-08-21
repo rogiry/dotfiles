@@ -33,7 +33,12 @@ brew "tlrc"                      # tldr (예제 중심 man)
 brew "chezmoi"                   # 이 dotfiles 자체를 관리
 
 # ── 앱 / 폰트 ────────────────────────────────────────────
+# cask 는 설치만 해준다. auto_updates 인 앱(zed, vscode)은 이후 앱이 스스로
+# 갱신하고 `brew upgrade --cask` 는 건너뛴다 — 최신인데 다시 받을 이유가 없어서다.
+# brew 기준으로 강제로 맞추려면 `brew upgrade --cask --greedy`.
+# 이미 손으로 설치한 앱을 목록에 넣을 땐 `brew install --cask --adopt <이름>`.
 cask "zed"
+cask "visual-studio-code"
 cask "font-meslo-lg-nerd-font"   # Ghostty 폰트. starship/ccstatusline 아이콘용
 
 # 의도적으로 제외:
