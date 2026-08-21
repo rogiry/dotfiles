@@ -3,6 +3,7 @@ README.md
 CLAUDE.md
 docs
 docs/**
+tests
 Brewfile
 bootstrap.sh
 macos

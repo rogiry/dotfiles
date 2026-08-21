@@ -30,6 +30,7 @@ brew "gh"                        # GitHub CLI
 brew "git-delta"                 # git diff 뷰어
 brew "lazygit"                   # git TUI
 brew "jq"                        # JSON 처리
+brew "shellcheck"                # 셸 스크립트 정적 분석 (CI 와 같은 검사)
 
 # ── 시스템 ───────────────────────────────────────────────
 brew "btop"                      # top 대체

@@ -124,6 +124,9 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 ├── macos/
 │   ├── defaults.sh              Dock / 키보드 / 트랙패드 설정 적용
 │   └── capture.sh               현재 맥 상태 덤프 (drift 확인용)
+├── tests/
+│   └── git-status-bits.test.sh  상태줄 스크립트 동작 테스트
+├── .github/workflows/ci.yml     CI (아래 "검증" 과 같은 검사)
 └── docs/                        세부 문서
 ```
 
@@ -136,11 +139,18 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 |---|---|
 | `chezmoi diff` | 적용될 변경 |
 | `script -q /dev/null zsh -lic 'exit'` | 셸이 경고 없이 로드되는지 |
+| `bash tests/git-status-bits.test.sh` | 상태줄 git 위젯 동작 |
+| `shellcheck -S warning **/*.sh` | 셸 스크립트 정적 분석 |
 | `brew bundle check --verbose --file=Brewfile` | 누락된 패키지 |
 | `bash macos/capture.sh` | 현재 맥 설정 (`macos/defaults.sh` 와 대조) |
 
 > `zsh -lic` 만 쓰면 pty 가 없어 `can't change option: zle` 가짜 경고가 뜬다.
 > 반드시 `script -q /dev/null` 로 감싼다.
+
+push·PR 마다 [CI](.github/workflows/ci.yml) 가 같은 검사를 돌린다.
+**`chezmoi apply` 는 CI 에서 실행하지 않는다** — `run_` 스크립트가 brew bundle 과
+Claude Code 설치를 시도해 느리고 불안정하다. 대신 `chezmoi archive` 로
+"적용될 결과"를 전부 렌더해 템플릿이 깨지지 않았는지 본다.
 
 ## 되돌리기
 

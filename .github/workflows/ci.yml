@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# 검증만 한다. chezmoi apply 를 실제로 돌리지 않는다 —
+# run_ 스크립트가 brew bundle / Claude Code 설치를 시도해 느리고 불안정하다.
+# 대신 chezmoi archive 로 "적용될 결과"를 전부 렌더해서 확인한다.
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 셸 구문 검사
+        run: |
+          fail=0
+          for f in bootstrap.sh macos/*.sh .chezmoiscripts/*.sh \
+                   dot_local/bin/executable_git-status-bits; do
+            [ -f "$f" ] || continue
+            if bash -n "$f"; then echo "  ok   $f"
+            else echo "  FAIL $f"; fail=1; fi
+          done
+          # zsh 파일은 zsh 로 (bash -n 으로는 못 본다)
+          sudo apt-get update -qq && sudo apt-get install -y -qq zsh >/dev/null
+          for f in dot_zshrc dot_zprofile create_dot_zshrc.local; do
+            [ -f "$f" ] || continue
+            if zsh -n "$f"; then echo "  ok   $f"
+            else echo "  FAIL $f"; fail=1; fi
+          done
+          exit $fail
+
+      - name: shellcheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          # git-status-bits 는 POSIX sh, 나머지는 bash
+          additional_files: 'executable_git-status-bits'
+          severity: warning
+
+      - name: Brewfile 구문 (brew 없이 Ruby 파서로)
+        run: ruby -c Brewfile
+
+      - name: JSON / TOML 유효성
+        run: |
+          python3 - <<'PY'
+          import json, sys, tomllib, pathlib
+          fail = False
+          for p in pathlib.Path('.').rglob('*.json'):
+              if '.git/' in str(p): continue
+              try:
+                  json.loads(p.read_text()); print(f'  ok   {p}')
+              except Exception as e:
+                  print(f'  FAIL {p}: {e}'); fail = True
+          for p in list(pathlib.Path('.').rglob('*.toml')):
+              if '.git/' in str(p): continue
+              try:
+                  tomllib.loads(p.read_text()); print(f'  ok   {p}')
+              except Exception as e:
+                  print(f'  FAIL {p}: {e}'); fail = True
+          sys.exit(1 if fail else 0)
+          PY
+
+      - name: git-status-bits 동작 테스트
+        run: bash tests/git-status-bits.test.sh
+
+      - name: chezmoi 템플릿 전체 렌더
+        run: |
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+          export PATH="$HOME/.local/bin:$PATH"
+          FAKE="$(mktemp -d)"
+          # 프롬프트는 TTY 를 요구하므로 CI 에서는 값을 직접 준다.
+          # 이 경로가 깨지면 문서에 적어둔 비대화 설치법도 깨진 것이다.
+          HOME="$FAKE" chezmoi init --source="$PWD" \
+            --promptString "Git 사용자 이름=ci" \
+            --promptString "Git 이메일=ci@example.com"
+          # archive 는 모든 템플릿을 렌더하되 스크립트를 실행하지 않는다.
+          # 정의되지 않은 변수나 템플릿 문법 오류면 exit 1.
+          OUT="$(mktemp -d)"
+          HOME="$FAKE" chezmoi archive --source="$PWD" --destination="$FAKE" \
+            | tar -xf - -C "$OUT"
+          echo "  ok   모든 템플릿 렌더 성공"
+
+          # .chezmoiscripts/*.tmpl 은 {{ }} 때문에 렌더 전에는 구문 검사가 안 된다.
+          # 렌더 결과를 검사하지 않으면 오타가 chezmoi apply 때까지 숨는다.
+          fail=0
+          for f in "$OUT"/.chezmoiscripts/*.sh "$OUT"/.local/bin/git-status-bits; do
+            [ -f "$f" ] || continue
+            if bash -n "$f"; then echo "  ok   렌더됨: ${f#"$OUT"/}"
+            else echo "  FAIL 렌더됨: ${f#"$OUT"/}"; fail=1; fi
+          done
+          if zsh -n "$OUT/.zshrc"; then echo "  ok   렌더됨: .zshrc"
+          else echo "  FAIL 렌더됨: .zshrc"; fail=1; fi
+          exit $fail
+
+      - name: 개인 정보가 저장소에 없는지
+        run: |
+          # .chezmoi.toml.tmpl 로 옮긴 뒤로 이름/이메일은 저장소에 있으면 안 된다.
+          # (문서의 예시와 프롬프트 문구는 제외)
+          if grep -rn --exclude-dir=.git --exclude-dir=.github \
+               --exclude='README.md' --exclude='CLAUDE.md' --exclude-dir=docs \
+               -E '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' . \
+             | grep -v 'example.com' | grep -v 'noreply'; then
+            echo "저장소에 이메일 주소가 들어있습니다." >&2
+            exit 1
+          fi
+          echo "  ok   평문 이메일 없음"
