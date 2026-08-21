@@ -1,5 +1,6 @@
 # ~/.gitconfig — chezmoi 관리 (템플릿)
-# 값은 .chezmoidata.toml 의 [user] 에서 온다.
+# 이름/이메일은 chezmoi init 이 물어본 값 (~/.config/chezmoi/chezmoi.toml).
+# 저장소에는 들어있지 않다. 바꾸려면: chezmoi init --prompt
 
 [user]
 	name = {{ .user.name | quote }}

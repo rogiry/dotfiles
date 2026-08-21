@@ -1,0 +1,29 @@
+{{/*
+  chezmoi 설정 파일 템플릿 — `chezmoi init` 때 딱 한 번 렌더된다.
+
+  여기서 물어본 답은 저장소가 아니라 ~/.config/chezmoi/chezmoi.toml 에 저장된다.
+  즉 머신마다 따로 남고, 공개 저장소에는 개인 정보가 들어가지 않는다.
+  그래서 남이 이 저장소를 그대로 써도 자기 이름으로 커밋한다.
+
+    다시 묻게 하기 :  chezmoi init --prompt
+    비대화 설치     :  chezmoi init --apply rogiry/dotfiles \
+                         --promptString "Git 사용자 이름=이름" \
+                         --promptString "Git 이메일=메일"
+
+  주의 1: --promptString 의 키는 데이터 경로가 아니라 "프롬프트 문구"다.
+          "user.name=..." 은 먹지 않는다.
+  주의 2: 기본값을 일부러 두지 않았다. 엔터만 쳐서 남의 이름으로 커밋하는
+          사고를 막기 위해서다. 그래서 --promptDefaults 만으로는 설치되지 않는다.
+  주의 3: 이 파일이 만든 config 가 없으면 `chezmoi apply` 는 조용히 넘어가지 않고
+          `map has no entry for key "user"` 로 죽는다. 먼저 `chezmoi init` 할 것.
+  주의 4: 설명은 반드시 이 템플릿 주석 안에 둘 것. `#` 주석으로 쓰면 생성된
+          config 에 그대로 찍히고, {{"{{-"}} 트리밍이 다음 줄을 주석에 붙여버린다.
+*/ -}}
+{{- $name  := promptStringOnce . "user.name"  "Git 사용자 이름" -}}
+{{- $email := promptStringOnce . "user.email" "Git 이메일" -}}
+{{- if not $name  }}{{ fail "Git 사용자 이름은 비워둘 수 없습니다." }}{{ end -}}
+{{- if not $email }}{{ fail "Git 이메일은 비워둘 수 없습니다." }}{{ end -}}
+# chezmoi init 이 생성한 파일. 값을 바꾸려면:  chezmoi init --prompt
+[data.user]
+    name  = {{ $name | quote }}
+    email = {{ $email | quote }}

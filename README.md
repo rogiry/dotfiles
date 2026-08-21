@@ -26,11 +26,43 @@ chezmoi init --apply rogiry/dotfiles
 bash "$(chezmoi source-path)/macos/defaults.sh"   # 시스템 설정은 별도 실행
 ```
 
+설치 중 **Git 사용자 이름과 이메일**을 물어본다. 답은 저장소가 아니라
+`~/.config/chezmoi/chezmoi.toml` 에 **머신별로** 저장되므로, 이 저장소를 그대로 써도
+자기 이름으로 커밋된다. 기본값은 일부러 두지 않았다 — 엔터만 쳐서 남의 이름으로
+커밋하는 사고를 막기 위해서다.
+
+터미널이 없는 곳(CI 등)에서는 값을 직접 준다:
+
+```sh
+chezmoi init --apply rogiry/dotfiles \
+  --promptString "Git 사용자 이름=이름" --promptString "Git 이메일=메일"
+```
+
 설치 후 남는 수동 작업:
 
 1. **Ghostty 재시작** — Nerd Font 반영
 2. **로그아웃 또는 재시작** — 트랙패드 제스처 완전 반영
 3. **[상태줄 설정](docs/statusline.md)** — `~/.claude/settings.json` 에 스니펫 추가
+
+## 포크해서 쓰기
+
+개인 설정이지만 그대로 가져다 써도 동작한다 — 개인 식별 정보가 저장소에 없고
+설치할 때 물어보기 때문이다. 포크했다면 저장소 주소만 바꾸면 된다:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
+  | DOTFILES_REPO=you/dotfiles bash
+```
+
+취향에 맞게 고칠 곳:
+
+| 파일 | 무엇 |
+|---|---|
+| `Brewfile` | 설치할 패키지·앱 |
+| `macos/defaults.sh` | 시스템 기본값 (이 맥의 스냅샷이다) |
+| `dot_config/ghostty/config` | 터미널 폰트·테마 |
+| `dot_gitconfig.tmpl` | git alias, 에디터 (`zed --wait`) |
+| `bootstrap.sh` | `DOTFILES_REPO` 기본값 |
 
 ## 사용법
 
@@ -69,7 +101,8 @@ bash "$(chezmoi source-path)/macos/defaults.sh"   # 시스템 설정은 별도 �
 .
 ├── bootstrap.sh                 새 맥 부트스트랩
 ├── Brewfile                     brew 패키지 목록
-├── .chezmoidata.toml            템플릿 변수 (이름/이메일)
+├── .chezmoi.toml.tmpl           init 때 이름/이메일을 물어봄 (답은 저장소 밖)
+├── .chezmoidata.toml            저장소 공통 상수
 ├── .chezmoiignore               저장소에만 두고 홈에 안 뿌릴 것
 ├── .chezmoiscripts/
 │   ├── run_onchange_before_10-brew.sh.tmpl    Brewfile 변경 시 brew bundle

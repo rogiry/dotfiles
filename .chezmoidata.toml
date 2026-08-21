@@ -1,8 +1,9 @@
-# chezmoi 템플릿에서 쓰는 변수. 새 머신에서 값만 바꾸면 됨.
-[user]
-    name  = "rogiry"
-    email = "hogil1235@gmail.com"
+# 저장소 공통 상수. 모든 머신에서 같은 값만 여기 둔다.
+#
+# 개인 식별 정보(이름/이메일)는 여기 두지 않는다 — 저장소에 커밋되기 때문이다.
+# 그건 .chezmoi.toml.tmpl 이 `chezmoi init` 때 물어보고
+# ~/.config/chezmoi/chezmoi.toml (저장소 밖) 에 저장한다.
 
 [git]
-    # git-delta 를 pager 로 쓸지 (brew 로 설치됨)
+    # git-delta 를 pager 로 쓸지 (Brewfile 이 설치를 보장한다)
     useDelta = true
