@@ -41,180 +41,178 @@
     ],
     [
       {
-        "id": "1",
         "type": "git-origin-owner-repo",
         "color": "brightBlue",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        }
+        },
+        "id": "1"
       },
       {
-        "id": "2",
-        "type": "separator"
+        "type": "separator",
+        "id": "2"
       },
       {
-        "id": "3",
         "type": "git-branch",
         "color": "magenta",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        }
+        },
+        "id": "3"
       },
       {
-        "id": "4",
-        "type": "separator"
+        "type": "separator",
+        "id": "4"
       },
       {
-        "id": "5",
         "type": "git-sha",
         "color": "brightBlack",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        }
+        },
+        "id": "5"
       },
       {
-        "id": "6",
-        "type": "separator"
-      },
-      {
-        "id": "7",
         "type": "git-ahead-behind",
         "color": "brightYellow",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        }
-      },
-      {
-        "id": "8",
-        "type": "separator"
-      },
-      {
-        "id": "9",
-        "type": "git-insertions",
-        "color": "green",
-        "metadata": {
-          "hideNoGit": "true",
-          "hideWhenEmpty": "true",
-          "hideNoRemote": "true"
-        }
-      },
-      {
-        "id": "10",
-        "type": "git-deletions",
-        "color": "red",
-        "metadata": {
-          "hideNoGit": "true",
-          "hideWhenEmpty": "true",
-          "hideNoRemote": "true"
-        }
-      },
-      {
-        "id": "11",
-        "type": "separator"
-      },
-      {
-        "id": "12",
-        "type": "git-staged-files",
-        "color": "green",
-        "metadata": {
-          "hideNoGit": "true",
-          "hideWhenEmpty": "true",
-          "hideNoRemote": "true"
-        }
+        },
+        "id": "6"
       },
       {
         "type": "custom-text",
         "customText": " ",
         "color": "brightBlack",
-        "id": "13"
+        "id": "7"
       },
       {
-        "id": "14",
-        "type": "git-unstaged-files",
-        "color": "yellow",
-        "metadata": {
-          "hideNoGit": "true",
-          "hideWhenEmpty": "true",
-          "hideNoRemote": "true"
-        }
-      },
-      {
-        "type": "custom-text",
-        "customText": " ",
-        "color": "brightBlack",
-        "id": "15"
-      },
-      {
-        "id": "16",
-        "type": "git-untracked-files",
-        "color": "red",
-        "metadata": {
-          "hideNoGit": "true",
-          "hideWhenEmpty": "true",
-          "hideNoRemote": "true"
-        }
-      },
-      {
-        "id": "17",
-        "type": "separator"
-      },
-      {
-        "id": "18",
         "type": "git-clean-status",
         "color": "brightGreen",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        }
+        },
+        "id": "8"
       },
       {
-        "id": "19",
-        "type": "separator"
+        "type": "separator",
+        "id": "9"
       },
       {
-        "id": "20",
+        "type": "git-insertions",
+        "color": "green",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "10"
+      },
+      {
+        "type": "git-deletions",
+        "color": "red",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "11"
+      },
+      {
+        "type": "separator",
+        "id": "12"
+      },
+      {
+        "type": "git-staged-files",
+        "color": "green",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "13"
+      },
+      {
+        "type": "custom-text",
+        "customText": " ",
+        "color": "brightBlack",
+        "id": "14"
+      },
+      {
+        "type": "git-unstaged-files",
+        "color": "yellow",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "15"
+      },
+      {
+        "type": "custom-text",
+        "customText": " ",
+        "color": "brightBlack",
+        "id": "16"
+      },
+      {
+        "type": "git-untracked-files",
+        "color": "red",
+        "metadata": {
+          "hideNoGit": "true",
+          "hideWhenEmpty": "true",
+          "hideNoRemote": "true"
+        },
+        "id": "17"
+      },
+      {
+        "type": "separator",
+        "id": "18"
+      },
+      {
         "type": "git-review",
         "color": "cyan",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        }
+        },
+        "id": "19"
       },
       {
-        "id": "21",
-        "type": "separator"
+        "type": "separator",
+        "id": "20"
       },
       {
-        "id": "22",
         "type": "git-ci-status",
         "color": "brightGreen",
         "metadata": {
           "hideNoGit": "true",
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
-        }
+        },
+        "id": "21"
       },
       {
-        "id": "23",
-        "type": "separator"
+        "type": "separator",
+        "id": "22"
       },
       {
-        "id": "24",
         "type": "current-working-dir",
         "color": "brightBlue",
         "metadata": {
           "abbreviateHome": "true"
-        }
+        },
+        "id": "23"
       }
     ],
     [
