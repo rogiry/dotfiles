@@ -79,34 +79,21 @@
         "id": "5"
       },
       {
-        "type": "git-ahead-behind",
-        "color": "brightYellow",
-        "metadata": {
-          "hideNoGit": "true",
-          "hideWhenEmpty": "true",
-          "hideNoRemote": "true"
-        },
-        "id": "6"
-      },
-      {
         "type": "custom-text",
         "customText": " ",
         "color": "brightBlack",
+        "id": "6"
+      },
+      {
+        "type": "custom-command",
+        "commandPath": "$HOME/.local/bin/git-sync-status",
+        "timeout": 1000,
+        "color": "brightYellow",
         "id": "7"
       },
       {
-        "type": "git-clean-status",
-        "color": "brightGreen",
-        "metadata": {
-          "hideNoGit": "true",
-          "hideWhenEmpty": "true",
-          "hideNoRemote": "true"
-        },
-        "id": "8"
-      },
-      {
         "type": "separator",
-        "id": "9"
+        "id": "8"
       },
       {
         "type": "git-insertions",
@@ -116,7 +103,7 @@
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
         },
-        "id": "10"
+        "id": "9"
       },
       {
         "type": "git-deletions",
@@ -126,11 +113,11 @@
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
         },
-        "id": "11"
+        "id": "10"
       },
       {
         "type": "separator",
-        "id": "12"
+        "id": "11"
       },
       {
         "type": "git-staged-files",
@@ -140,13 +127,13 @@
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
         },
-        "id": "13"
+        "id": "12"
       },
       {
         "type": "custom-text",
         "customText": " ",
         "color": "brightBlack",
-        "id": "14"
+        "id": "13"
       },
       {
         "type": "git-unstaged-files",
@@ -156,13 +143,13 @@
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
         },
-        "id": "15"
+        "id": "14"
       },
       {
         "type": "custom-text",
         "customText": " ",
         "color": "brightBlack",
-        "id": "16"
+        "id": "15"
       },
       {
         "type": "git-untracked-files",
@@ -172,11 +159,11 @@
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
         },
-        "id": "17"
+        "id": "16"
       },
       {
         "type": "separator",
-        "id": "18"
+        "id": "17"
       },
       {
         "type": "git-review",
@@ -186,11 +173,11 @@
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
         },
-        "id": "19"
+        "id": "18"
       },
       {
         "type": "separator",
-        "id": "20"
+        "id": "19"
       },
       {
         "type": "git-ci-status",
@@ -200,11 +187,11 @@
           "hideWhenEmpty": "true",
           "hideNoRemote": "true"
         },
-        "id": "21"
+        "id": "20"
       },
       {
         "type": "separator",
-        "id": "22"
+        "id": "21"
       },
       {
         "type": "current-working-dir",
@@ -212,7 +199,7 @@
         "metadata": {
           "abbreviateHome": "true"
         },
-        "id": "23"
+        "id": "22"
       }
     ],
     [
