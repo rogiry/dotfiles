@@ -4,7 +4,6 @@
 
 # ── 탭 ───────────────────────────────────────────────────
 tap "stablyai/orca"              # Orca (AI 코딩 에이전트 IDE)
-tap "manaflow-ai/cmux"           # cmux (Ghostty 기반 터미널)
 
 # ── 셸 / 프롬프트 ─────────────────────────────────────────
 brew "starship"                  # 프롬프트
@@ -44,13 +43,22 @@ brew "chezmoi"                   # 이 dotfiles 자체를 관리
 # 이미 손으로 설치한 앱도 그냥 목록에 넣으면 된다. brew bundle 이 --adopt 를
 # 자동으로 붙여서(Homebrew/bundle/cask.rb) 재설치 없이 관리 대상으로 인수한다.
 # auto_updates 인 앱은 버전 동일성 검사까지 건너뛰므로 앱이 cask 보다 앞서도 된다.
-# 반대로 auto_updates 가 없는 앱(cmux)은 버전이 어긋나면 adopt 가 실패한다.
+# 반대로 auto_updates 가 없는 앱은 버전이 어긋나면 adopt 가 실패한다.
 cask "zed"
 cask "visual-studio-code"
 cask "google-chrome"
-cask "stablyai/orca/orca"
-cask "manaflow-ai/cmux/cmux"
+# 서드파티 탭의 cask 는 Homebrew 가 기본적으로 로드를 거부한다 (임의 Ruby 실행이라).
+# trusted: true 는 탭 전체가 아니라 이 cask 하나만 신뢰한다 — 범위가 좁은 쪽.
+# 신뢰 목록은 ~/.homebrew/trust.json 에 쌓인다. 수동으로 하려면 brew trust --cask <이름>.
+cask "stablyai/orca/orca",     trusted: true
 cask "font-meslo-lg-nerd-font"   # ~/.config/ghostty/config 가 지정하는 폰트 (cmux 가 읽는다)
 
 # 의도적으로 제외:
+#   cmux (manaflow-ai/cmux) — 수동 설치본을 adopt 하려다 실패한다. macOS 가 서명된
+#     앱 번들의 embedded.provisionprofile 수정을 막아서 brew 의 `chmod -R a+rX` 가
+#     "Operation not permitted" 로 죽는다 (터미널에 App Management 권한이 없으면 발생).
+#     앱은 멀쩡히 돌아가므로 수동 설치 상태로 둔다. brew 로 넘기려면 /Applications/cmux.app
+#     을 지우고 `brew install --cask manaflow-ai/cmux/cmux` 로 새로 깔아야 한다.
+#   claude-code — 네이티브 설치본(~/.local/share/claude)이 자체 업데이터로 항상 앞선다.
+#     PATH 도 ~/.local/bin 이 /opt/homebrew/bin 보다 먼저라 brew 판은 가려져서 안 쓰인다.
 #   direnv — mise 가 .mise.toml 로 디렉토리별 env/툴 버전을 이미 처리. 병용 시 로딩 순서 충돌.
