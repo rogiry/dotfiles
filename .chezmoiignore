@@ -1,6 +1,8 @@
 # 아래 항목은 저장소에만 존재하고 홈 디렉토리로 전개하지 않는다.
 README.md
 CLAUDE.md
+docs
+docs/**
 Brewfile
 bootstrap.sh
 macos

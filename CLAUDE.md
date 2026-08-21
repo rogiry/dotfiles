@@ -1,13 +1,14 @@
 # dotfiles (chezmoi)
 
-소스: `~/.local/share/chezmoi` · 설정 근거와 실측값은 `README.md` 참고.
+소스: `~/.local/share/chezmoi` · 개요는 `README.md`, 설정 근거와 실측값은 `docs/` 참고
+(`docs/shell.md` · `docs/runtimes.md` · `docs/macos.md` · `docs/statusline.md` · `docs/secrets.md`).
 
 ## 절대 하지 말 것
 
 - `~/.zshrc` 등 **홈의 파일을 직접 수정 금지** — 다음 `chezmoi apply` 에 덮어써짐.
   소스(`dot_zshrc`)를 고치거나 `chezmoi edit ~/.zshrc` 를 쓸 것.
 - `~/.claude/settings.json` 을 **`chezmoi add` 하지 말 것** — Claude Code 가 직접 쓰는
-  파일이라 서로 덮어씀. statusLine 스니펫만 README 에 둔다.
+  파일이라 서로 덮어씀. statusLine 스니펫만 `docs/statusline.md` 에 둔다.
 - `macos/defaults.sh` 를 `.chezmoiscripts/` 로 옮기지 말 것 — `chezmoi apply` 마다
   `killall Dock Finder` 가 돌게 된다. 수동 실행이 의도된 설계.
 
