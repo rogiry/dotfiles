@@ -29,3 +29,15 @@ minisign            = true
 # 둘 다 core 백엔드. 레지스트리 기본값이자 이 파일의 우선순위 정책과 일치한다.
 bun  = "latest"
 node = "lts"     # core 만 "lts" 별칭을 해석한다 (aqua:nodejs/node 는 빈 결과)
+
+# ── 훅 ────────────────────────────────────────────────────────────
+# mise 는 툴의 '바이너리'만 깐다. brew 와 달리 완성 스크립트를
+# site-functions 로 옮겨주는 단계가 없어서, 이걸 걸어두지 않으면
+# `mise use -g deno` 로 새로 넣은 툴은 탭 완성이 통째로 없다.
+#
+# 훅은 `sh -c -o errexit` 로 실행된다. ~ 확장이 안 되므로 $HOME 을 쓰고,
+# 파일이 없을 때 mise 가 WARN 을 뱉지 않도록 -x 로 먼저 거른다
+# (chezmoi apply 전이거나 다른 머신일 수 있다).
+# 스크립트 설명은 ~/.local/bin/mise-completions 상단 주석 참고.
+[hooks]
+postinstall = '! [ -x "$HOME/.local/bin/mise-completions" ] || "$HOME/.local/bin/mise-completions" --quiet'

@@ -23,9 +23,13 @@
 
 ## 검증 명령
 
+- `bash tests/validate.sh` — **저장소 전체 검증. CI 와 Stop 훅이 같은 파일을 돈다.**
+  검사를 늘릴 땐 여기 한 곳에만 적을 것.
 - `chezmoi diff` — 적용 전 미리보기 / `chezmoi apply -v` — 반영
 - `script -q /dev/null zsh -lic 'exit'` — 셸 로드 검증. **`zsh -lic` 만 쓰면
   pty 가 없어 `can't change option: zle` 가짜 경고가 뜬다.**
+- `script -q /dev/null zsh -ic 'print ${_comps[bun]}'` — 완성 등록 확인.
+  **`compinit -C` 는 새 완성 파일을 못 알아챈다** — `~/.zcompdump` 를 지워야 한다.
 - `bash macos/capture.sh` — 현재 맥 설정 덤프 (`macos/defaults.sh` 와 대조)
 - `brew bundle check --verbose --file=Brewfile`
 
@@ -34,6 +38,24 @@
 - `dot_zshrc` 의 번호 매긴 섹션은 **로드 순서가 load-bearing**. 재배열 금지.
   fzf-tab 은 compinit 뒤 + 위젯 래핑 플러그인 앞, syntax-highlighting 은 맨 끝.
 - mise `node` 는 **core 백엔드 유지**. `aqua:nodejs/node` 는 `lts` 별칭을 해석 못 함.
+- **mise 는 완성 스크립트를 안 깔아준다** (바이너리만). `~/.local/bin/mise-completions`
+  가 `~/.local/share/zsh/site-functions` 에 **두 줄짜리 스텁**만 깔고, 실제 정의는
+  `_mise_comp_dispatch` 가 TAB 시점의 활성 버전에 맞춰 캐시에서 고른다 (위임형).
+  그 디렉토리에 손으로 뭘 두지 말 것 — 매번 갈아엎는다.
+  `bun completions` 는 설치 명령이 아니라 **stdout 으로 뱉는 명령**이다
+  (`>/dev/null` 로 버린 게 예전 버그).
+- **완성 정의 출처 ≠ 바이너리 출처.** `node`/`npm` 은 mise 바이너리인데 완성은
+  brew `zsh-completions`(정적, `_node`)와 zsh 배포판(`/usr/share/zsh/5.9/functions/_npm`,
+  위임형)에서 온다. `node --completion-bash` / `npm completion` 은 **bash 완성**이라
+  생성기가 못 쓴다.
+- 디스패처에서 **`unfunction -m` 을 지우지 말 것.** clap 완성 스크립트는 헬퍼를
+  `(( $+functions[...] )) ||` 로 감싸서 재정의를 건너뛴다. 안 지우고 source 하면
+  최상위 서브커맨드 목록이 이전 버전 것으로 남아 **조용히 틀린 후보**가 뜬다.
+- PATH 에서 버전 뽑을 때 **`installs/<툴>/*/bin` 으로 고정하지 말 것.** uv 처럼
+  `bin/` 없는 레이아웃이 있다. `latest`/`lts` 는 심볼릭이라 `:A` 로 풀어야 한다.
+  (위 둘은 `tests/mise-completions.test.sh` 가 잡는다 — mise·네트워크 불필요.)
+- 생성기의 `mise -C "$HOME" ls` 에서 **`-C "$HOME"` 을 빼지 말 것.** `active` 가
+  cwd 에 달려 있어 예열되는 버전이 매번 달라진다.
 - 트랙패드 설정은 **두 도메인 모두**에 써야 함 (내장 + Magic Trackpad),
   그리고 로그아웃해야 반영됨.
 
