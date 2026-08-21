@@ -13,7 +13,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 셸 구문 검사
         run: |
@@ -33,12 +33,18 @@ jobs:
           done
           exit $fail
 
+      # 서드파티 액션(ludeeus/action-shellcheck) 대신 직접 호출한다.
+      # ubuntu 러너에 shellcheck 가 기본 설치돼 있어 액션이 필요 없고,
+      # 로컬에서 돌리는 명령과 정확히 같아 결과가 갈리지 않는다.
       - name: shellcheck
-        uses: ludeeus/action-shellcheck@master
-        with:
-          # git-status-bits 는 POSIX sh, 나머지는 bash
-          additional_files: 'executable_git-status-bits'
-          severity: warning
+        run: |
+          shellcheck --version | head -2
+          shellcheck -S warning \
+            bootstrap.sh \
+            macos/*.sh \
+            .chezmoiscripts/*.sh \
+            tests/*.sh \
+            dot_local/bin/executable_git-status-bits
 
       - name: Brewfile 구문 (brew 없이 Ruby 파서로)
         run: ruby -c Brewfile
