@@ -1,11 +1,14 @@
 #!/bin/sh
 # ccstatusline 의 custom-command 위젯용. stdin 으로 statusline JSON 을 받는다.
 #
-#   git-status-bits branch  브랜치 + 워크트리 + 원격 동기화 상태
-#     ⎇ main ✓      메인 워크트리, 원격과 동일
-#     ⑂ feat ↑2↓3   연결된 워크트리(git worktree add), 갈라짐
+#   git-status-bits repo    origin 의 owner/repo + 워크트리 표시
+#     rogiry/dotfiles     메인 워크트리
+#     rogiry/dotfiles ⑂   연결된 워크트리(git worktree add)
+#
+#   git-status-bits branch  브랜치 + 원격 동기화 상태
+#     ⎇ main ✓      원격과 동일
+#     ⎇ feat ↑2↓3   갈라짐
 #     ⎇ main ⚠      upstream 미설정
-#     글리프만 바뀌므로 워크트리 표시는 자리를 더 먹지 않는다.
 #
 #   git-status-bits commit  현재 커밋 SHA (짧은 형식)
 #     e8f440e
@@ -27,6 +30,8 @@
 # 왜 내장 위젯을 안 쓰나:
 #   - git-ahead-behind 는 ahead/behind 가 모두 0이면 무조건 null 을 반환해서
 #     "동기화됨(✓)"을 표현할 수 없다.
+#   - git-origin-owner-repo 는 내장이라 뒤에 워크트리 표시를 붙일 수 없다.
+#     merge 로 붙이면 공백이 안 들어가 rogiry/dotfiles⑂ 가 된다.
 #   - git-staged-files 등 3개를 나란히 두면 S:0M:1?:2 처럼 붙어버린다.
 #     custom-text 로 공백을 넣으면 그 공백이 항상 렌더돼서, git 저장소가
 #     아닐 때 빈 구분자(|)가 줄에 남는다. merge 속성으로는 공백이 안 들어간다.
@@ -46,6 +51,13 @@ dir=$(printf '%s' "$json" | sed -n 's/.*"current_dir"[[:space:]]*:[[:space:]]*"\
 
 git -C "$dir" rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
 
+# 연결된 워크트리인가. --git-dir 과 --git-common-dir 이 다르면 그렇다.
+is_worktree() {
+    _gd=$(git -C "$1" rev-parse --absolute-git-dir 2>/dev/null)
+    _cd=$(git -C "$1" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+    [ -n "$_gd" ] && [ -n "$_cd" ] && [ "$_gd" != "$_cd" ]
+}
+
 # 원격 대비 상태를 한 토큰으로. upstream 이 없으면 ⚠.
 sync_marker() {
     _counts=$(git -C "$1" rev-list --left-right --count '@{upstream}...HEAD' 2>/dev/null)
@@ -64,6 +76,21 @@ sync_marker() {
 }
 
 case "$mode" in
+repo)
+    url=$(git -C "$dir" remote get-url origin 2>/dev/null) || exit 0
+    [ -n "$url" ] || exit 0
+    # git@host:owner/repo.git / https://host/owner/repo.git / ssh://git@host/owner/repo
+    # → 뒤에서 두 개의 경로 조각만 남긴다.
+    name=$(printf '%s' "$url" | sed -e 's#/*$##' -e 's#\.git$##' \
+        -e 's#^.*[:/]\([^:/][^:/]*/[^:/][^:/]*\)$#\1#')
+    [ -n "$name" ] || exit 0
+    if is_worktree "$dir"; then
+        printf '%s ⑂' "$name"
+    else
+        printf '%s' "$name"
+    fi
+    ;;
+
 commit)
     sha=$(git -C "$dir" rev-parse --short HEAD 2>/dev/null) || exit 0
     printf '%s' "$sha"
@@ -89,30 +116,26 @@ files)
         }'
     ;;
 
-branch|wt)
-    # --git-dir 과 --git-common-dir 이 다르면 연결된 워크트리다.
-    gd=$(git -C "$dir" rev-parse --absolute-git-dir 2>/dev/null)
-    cd_=$(git -C "$dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
-    if [ -n "$gd" ] && [ -n "$cd_" ] && [ "$gd" != "$cd_" ]; then
-        glyph='⑂'
-    else
-        glyph='⎇'
-    fi
+wt)
+    # && 로 쓰면 워크트리가 아닐 때 종료 코드가 1로 남는다.
+    if is_worktree "$dir"; then printf '⑂'; fi
+    ;;
 
-    [ "$mode" = "wt" ] && { [ "$glyph" = '⑂' ] && printf '⑂'; exit 0; }
-
+branch)
+    # 워크트리 표시는 repo 모드가 레포 이름 뒤에 그린다. 여기서 글리프를
+    # 바꾸면 한 줄에 두 번 나오므로 항상 ⎇ 다.
     name=$(git -C "$dir" symbolic-ref --short HEAD 2>/dev/null)
     if [ -z "$name" ]; then
         # 분리된 HEAD (rebase, 태그 체크아웃 등). upstream 개념이 없으므로
         # 동기화 표시를 붙이지 않는다 — 붙이면 항상 ⚠ 가 떠서 노이즈다.
         name=$(git -C "$dir" rev-parse --short HEAD 2>/dev/null) || exit 0
-        printf '%s %s' "$glyph" "$name"
+        printf '⎇ %s' "$name"
         exit 0
     fi
 
     # 동기화 상태를 브랜치에 붙여서 한 위젯이 함께 그린다. 별도 위젯으로 빼면
     # ccstatusline 이 사이에 구분자를 넣고(⎇ main | ✓), merge 로 붙이면 공백이
     # 사라진다(⎇ main✓). custom-command 출력은 .trim() 되므로 앞 공백도 못 쓴다.
-    printf '%s %s %s' "$glyph" "$name" "$(sync_marker "$dir")"
+    printf '⎇ %s %s' "$name" "$(sync_marker "$dir")"
     ;;
 esac

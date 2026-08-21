@@ -61,9 +61,9 @@ check "분리된 HEAD"   "⎇ $(cd "$W" && git rev-parse --short HEAD)" "$(bits 
 ( cd "$W" && git checkout -q - && git checkout -qb noups )
 check "upstream 없음" "⎇ noups ⚠"  "$(bits "$W" branch)"
 
-# 연결된 워크트리 — 글리프가 ⑂ 로 바뀐다
+# 연결된 워크트리 — branch 는 항상 ⎇ (표시는 repo 모드가 그린다)
 ( cd "$W" && git worktree add -q "$TMP/wt" -b wtbranch )
-check "워크트리"      "⑂ wtbranch ⚠" "$(bits "$TMP/wt" branch)"
+check "워크트리"      "⎇ wtbranch ⚠" "$(bits "$TMP/wt" branch)"
 check "wt 모드"       "⑂"           "$(bits "$TMP/wt" wt)"
 check "wt 모드(본체)" ""            "$(bits "$W" wt)"
 
@@ -72,10 +72,28 @@ check "wt 모드(본체)" ""            "$(bits "$W" wt)"
   && echo m >> a.txt && echo u > untracked.txt )
 check "files"         "S:1 M:1 ?:1" "$(bits "$W" files)"
 
+# ── repo 모드 ───────────────────────────────────────────────
+# origin URL 형식별 owner/repo 파싱. 여기서부터는 fetch/push 를 하지 않는다.
+# 호스트는 example.com — git@github.com 은 validate.sh 의 평문 이메일 검사에 걸린다.
+for url in \
+  "git@example.com:rogiry/dotfiles.git" \
+  "https://example.com/rogiry/dotfiles.git" \
+  "ssh://git@example.com/rogiry/dotfiles" \
+  "https://example.com/rogiry/dotfiles/"
+do
+  ( cd "$W" && git remote set-url origin "$url" )
+  check "repo:$url" "rogiry/dotfiles" "$(bits "$W" repo)"
+done
+# 워크트리는 이름 뒤에 ⑂ 가 붙는다 (config 는 본체와 공유한다)
+check "repo 워크트리"  "rogiry/dotfiles ⑂" "$(bits "$TMP/wt" repo)"
+# 원격이 없으면 빈 출력 — 내장 위젯의 hideNoRemote 와 같은 계약
+( cd "$W" && git remote remove origin )
+check "repo 원격 없음" ""            "$(bits "$W" repo)"
+
 # ── 빈 출력 계약 ────────────────────────────────────────────
 # git 저장소가 아니면 모든 모드가 아무것도 출력하지 않아야 한다.
 mkdir -p "$TMP/plain"
-for m in branch commit sync files wt; do
+for m in repo branch commit sync files wt; do
   check "저장소 아님:$m" "" "$(bits "$TMP/plain" "$m")"
 done
 # 존재하지 않는 경로도 마찬가지
