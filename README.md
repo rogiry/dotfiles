@@ -290,6 +290,37 @@ chezmoi add ~/.config/ccstatusline/settings.json   # 바꾼 뒤 저장소에 반
 
 ---
 
+## 로컬 오버라이드 (`~/.zshrc.local`)
+
+머신마다 다른 설정은 저장소에 넣지 않고 `~/.zshrc.local` 에 둔다.
+`.zshrc` **13번 섹션이 맨 마지막에 읽으므로, 여기서 정의한 것이 항상 이긴다.**
+
+```sh
+$EDITOR ~/.zshrc.local     # chezmoi edit 아님 — 관리 대상이 아니다
+exec zsh
+```
+
+- `.chezmoiignore` 에 등록돼 있어 **저장소로 올라가지 않는다**
+- 파일이 없어도 셸은 정상 동작한다 (존재할 때만 source)
+- 우선순위 검증: 저장소가 정의한 `ll` 을 로컬에서 재정의하면 로컬이 이긴다
+
+무엇을 넣나:
+
+| 넣을 것 | 넣지 말 것 |
+|---|---|
+| 이 머신에서만 쓰는 alias | 모든 머신에 필요한 설정 → `dot_zshrc` |
+| 회사/개인별 환경변수 | **시크릿 값** → 9번 섹션 키체인 방식 |
+| 실험적 설정 | 위젯 감싸는 플러그인 → 12번 뒤라 충돌 |
+
+예시 (실제로 이 머신에 들어있는 것):
+
+```bash
+# Claude Code: 권한 확인을 전부 건너뛰고 시작
+alias c='claude --dangerously-skip-permissions'
+```
+
+---
+
 ## 시크릿 (API 키 등)
 
 **이 저장소는 평문 시크릿을 담지 않는다.** 값은 macOS 키체인에 두고

@@ -5,3 +5,7 @@ Brewfile
 bootstrap.sh
 macos
 macos/**
+
+# 머신 전용 로컬 오버라이드 — 저장소가 관리하지 않는다.
+# .zshrc 13번 섹션이 있으면 읽어들인다. 없어도 정상 동작.
+.zshrc.local
