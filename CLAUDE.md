@@ -57,7 +57,8 @@
 - **`merge` 속성은 공백을 넣어주지 않는다.** `defaultPaddingSide` 는 Powerline 전용.
   간격이 필요하면 스크립트가 직접 출력해야 한다.
 - **`custom-command` 출력은 `.trim()` 된다.** 앞뒤 공백으로 간격을 못 만든다.
-  그래서 `commit` 모드가 SHA 와 ✓ 를 함께 출력한다.
+  그래서 `branch` 모드가 브랜치와 동기화 표시(✓/↑↓/⚠)를 함께 출력한다.
+  동기화는 브랜치-upstream 관계라 SHA 가 아니라 브랜치에 붙인다.
 - **`merge: true` + 빈 위젯 = 구분자를 건너뛴다.** 옵셔널 위젯에 merge 를 걸면
   값이 없을 때 앞뒤가 붙어버린다 (`⎇ main0afd20f✓`).
 - `custom-command` 의 cwd 는 ccstatusline 프로세스의 cwd 다. stdin JSON 에서 읽을 것.

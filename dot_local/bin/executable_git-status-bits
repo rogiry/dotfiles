@@ -1,20 +1,25 @@
 #!/bin/sh
 # ccstatusline 의 custom-command 위젯용. stdin 으로 statusline JSON 을 받는다.
 #
-#   git-status-bits sync    원격 동기화 상태
-#     ✓      원격과 동일
-#     ↑2     푸시 필요 / ↓3  풀 필요 / ↑2↓3  갈라짐
-#     ⚠      upstream 미설정
+#   git-status-bits branch  브랜치 + 워크트리 + 원격 동기화 상태
+#     ⎇ main ✓      메인 워크트리, 원격과 동일
+#     ⑂ feat ↑2↓3   연결된 워크트리(git worktree add), 갈라짐
+#     ⎇ main ⚠      upstream 미설정
+#     글리프만 바뀌므로 워크트리 표시는 자리를 더 먹지 않는다.
+#
+#   git-status-bits commit  현재 커밋 SHA (짧은 형식)
+#     e8f440e
+#
+#   git-status-bits sync    동기화 상태만 (✓ / ↑2 / ↓3 / ↑2↓3 / ⚠)
 #
 #   git-status-bits files   작업 트리 파일 상태 (색 포함)
 #     S:0 M:1 ?:2    staged / modified(미스테이지) / untracked 파일 수
 #
-#   git-status-bits branch  브랜치 이름 + 워크트리 여부
-#     ⎇ main      메인 워크트리
-#     ⑂ feature   연결된 워크트리 (git worktree add 로 만든 것)
-#     글리프만 바뀌므로 자리를 더 먹지 않는다.
-#
 #   git-status-bits wt      워크트리 표시만 (⑂ 또는 빈 출력)
+#
+# 동기화 상태를 SHA 가 아니라 브랜치에 붙이는 이유: ahead/behind 는 브랜치와
+# 그 upstream 사이의 관계지 커밋의 속성이 아니다. SHA 옆에 두면 "이 커밋이
+# 푸시됐나"처럼 읽히는데 실제 의미는 "이 브랜치가 원격보다 2개 앞섰다"이다.
 #
 # git 저장소가 아니면 어느 모드든 아무것도 출력하지 않는다.
 # 상태줄에서 빈 출력은 위젯이 통째로 접히므로 구분자(|)가 남지 않는다.
@@ -41,27 +46,31 @@ dir=$(printf '%s' "$json" | sed -n 's/.*"current_dir"[[:space:]]*:[[:space:]]*"\
 
 git -C "$dir" rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
 
-case "$mode" in
-commit|sync)
-    # SHA 와 동기화 상태를 한 위젯이 함께 그린다.
-    # 내장 git-sha 위젯을 쓰고 여기서 " ✓" 만 출력하는 방법은 안 된다 —
-    # ccstatusline 이 custom-command 출력에 .trim() 을 걸어 앞 공백을 지운다.
-    sha=$(git -C "$dir" rev-parse --short HEAD 2>/dev/null) || exit 0
-
-    counts=$(git -C "$dir" rev-list --left-right --count '@{upstream}...HEAD' 2>/dev/null)
-    if [ -z "$counts" ]; then
-        printf '%s ⚠' "$sha"        # upstream 미설정
-        exit 0
+# 원격 대비 상태를 한 토큰으로. upstream 이 없으면 ⚠.
+sync_marker() {
+    _counts=$(git -C "$1" rev-list --left-right --count '@{upstream}...HEAD' 2>/dev/null)
+    if [ -z "$_counts" ]; then
+        printf '⚠'
+        return
     fi
-    behind=$(printf '%s' "$counts" | awk '{print $1}')
-    ahead=$(printf '%s' "$counts" | awk '{print $2}')
-    if [ "$ahead" = "0" ] && [ "$behind" = "0" ]; then
-        printf '%s ✓' "$sha"
+    _behind=$(printf '%s' "$_counts" | awk '{print $1}')
+    _ahead=$(printf '%s' "$_counts" | awk '{print $2}')
+    if [ "$_ahead" = "0" ] && [ "$_behind" = "0" ]; then
+        printf '✓'
     else
-        printf '%s ' "$sha"
-        [ "$ahead" = "0" ]  || printf '↑%s' "$ahead"
-        [ "$behind" = "0" ] || printf '↓%s' "$behind"
+        [ "$_ahead" = "0" ]  || printf '↑%s' "$_ahead"
+        [ "$_behind" = "0" ] || printf '↓%s' "$_behind"
     fi
+}
+
+case "$mode" in
+commit)
+    sha=$(git -C "$dir" rev-parse --short HEAD 2>/dev/null) || exit 0
+    printf '%s' "$sha"
+    ;;
+
+sync)
+    sync_marker "$dir"
     ;;
 
 files)
@@ -94,11 +103,16 @@ branch|wt)
 
     name=$(git -C "$dir" symbolic-ref --short HEAD 2>/dev/null)
     if [ -z "$name" ]; then
-        # 분리된 HEAD (rebase, 태그 체크아웃 등)
+        # 분리된 HEAD (rebase, 태그 체크아웃 등). upstream 개념이 없으므로
+        # 동기화 표시를 붙이지 않는다 — 붙이면 항상 ⚠ 가 떠서 노이즈다.
         name=$(git -C "$dir" rev-parse --short HEAD 2>/dev/null) || exit 0
         printf '%s %s' "$glyph" "$name"
-    else
-        printf '%s %s' "$glyph" "$name"
+        exit 0
     fi
+
+    # 동기화 상태를 브랜치에 붙여서 한 위젯이 함께 그린다. 별도 위젯으로 빼면
+    # ccstatusline 이 사이에 구분자를 넣고(⎇ main | ✓), merge 로 붙이면 공백이
+    # 사라진다(⎇ main✓). custom-command 출력은 .trim() 되므로 앞 공백도 못 쓴다.
+    printf '%s %s %s' "$glyph" "$name" "$(sync_marker "$dir")"
     ;;
 esac
