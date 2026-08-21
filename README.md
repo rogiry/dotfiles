@@ -150,9 +150,36 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 > `zsh -lic` 만 쓰면 pty 가 없어 `can't change option: zle` 가짜 경고가 뜬다.
 > 반드시 `script -q /dev/null` 로 감싼다.
 
-push·PR 마다 [CI](.github/workflows/ci.yml) 가 **같은 `tests/validate.sh`** 를 돌리고,
-로컬에서도 Claude Code 의 Stop 훅([.claude/settings.json](.claude/settings.json))이 같은 것을 돌린다.
-검사 내용을 한 파일에만 적어두어 "로컬은 통과하는데 CI 만 빨간불" 이 생기지 않게 했다.
+검사 내용은 **`tests/validate.sh` 한 곳에만** 있고, 세 군데가 그걸 부른다:
+
+| 언제 | 무엇이 |
+|---|---|
+| 로컬 세션 종료 | Claude Code Stop 훅 ([.claude/settings.json](.claude/settings.json)) — 실패하면 마무리를 막는다 |
+| push · PR | [CI](.github/workflows/ci.yml) `validate` job |
+| 머지 직전 | 아래 룰셋이 `validate` 통과를 요구한다 |
+
+한 파일만 고치면 세 곳이 같이 움직이므로 "로컬은 통과하는데 CI 만 빨간불" 이 생기지 않는다.
+
+### 브랜치 룰셋
+
+두 개로 나눠 뒀다. **우회 가능 여부가 다르기 때문**이다.
+
+| 룰셋 | 규칙 | 관리자 우회 |
+|---|---|---|
+| `main` | 브랜치 삭제 금지, 포스푸시 금지 | **불가** — 히스토리는 누구도 못 지운다 |
+| `main: PR + CI` | PR 필수, `validate` 통과 필수 | 가능 |
+
+실측으로 확인한 동작:
+
+```
+CI 실패한 PR      → mergeState=BLOCKED, gh pr merge 거부
+CI 통과한 PR      → mergeState=CLEAN
+관리자 포스푸시    → GH013 rejected ("Cannot force-push to this branch")
+관리자 직접 push  → 통과. 단 "Bypassed rule violations" 를 원격이 알려준다
+```
+
+즉 혼자 빠르게 고칠 땐 `main` 에 직접 push 해도 되지만, 그때마다 우회했다는
+사실이 로그에 남는다. 히스토리를 되감는 것만은 본인도 못 한다.
 **`chezmoi apply` 는 CI 에서 실행하지 않는다** — `run_` 스크립트가 brew bundle 과
 Claude Code 설치를 시도해 느리고 불안정하다. 대신 `chezmoi archive` 로
 "적용될 결과"를 전부 렌더해 템플릿이 깨지지 않았는지 본다.
