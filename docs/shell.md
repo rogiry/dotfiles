@@ -230,8 +230,16 @@ _uv_commands() { ... }              # ← 이미 있으면 건너뛴다
 ### 함정
 
 - **`compinit -C` 는 새 완성 파일을 알아채지 못한다.** 4번 섹션은 덤프가 하루
-  이내면 `-C` 로 뜬다. 그래서 생성기가 **스텁 목록이 바뀌었을 때만** `~/.zcompdump`
-  를 지운다. 버전만 달라진 경우엔 스텁이 그대로라 지울 필요가 없다.
+  이내면 `-C` 로 뜬다. 그래서 덤프를 두 군데서 무효화한다:
+  - 생성기 — **스텁 목록이 바뀌었을 때만**. 버전만 달라진 경우엔 스텁이 그대로라
+    지울 필요가 없다.
+  - `run_onchange_after_30-completions` — **조건 없이**. 생성기는 자기 스텁만
+    비교할 뿐 **FPATH 구성이 바뀐 것은 모른다.** 실제로 `~/.local/share/zsh/functions`
+    를 FPATH 에 새로 추가한 `apply` 에서 스텁이 그대로였던 탓에 덤프가 남았고,
+    `compinit -C` 가 그걸 써서 `_mise_comp_dispatch` 가 등록되지 않았다 —
+    완성이 통째로 죽었는데 에러는 없었다.
+
+  FPATH 블록을 손으로 고쳤다면 똑같이 `rm ~/.zcompdump` 를 해야 한다.
 - **brew prefix 밑에 쓰지 않는다.** brew 가 관리하는 트리라 포뮬러 재설치나
   `brew cleanup` 때 사라지고, `brew doctor` 가 남의 파일이라고 경고한다.
 - `~/.local/share/zsh/site-functions` 는 **매번 갈아엎는다.** 여기에 손으로 뭘 두면

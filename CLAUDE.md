@@ -29,7 +29,8 @@
 - `script -q /dev/null zsh -lic 'exit'` — 셸 로드 검증. **`zsh -lic` 만 쓰면
   pty 가 없어 `can't change option: zle` 가짜 경고가 뜬다.**
 - `script -q /dev/null zsh -ic 'print ${_comps[bun]}'` — 완성 등록 확인.
-  **`compinit -C` 는 새 완성 파일을 못 알아챈다** — `~/.zcompdump` 를 지워야 한다.
+  **`compinit -C` 는 새 완성 파일도 새 FPATH 디렉토리도 못 알아챈다** —
+  `~/.zcompdump` 를 지워야 한다. FPATH 를 손으로 고쳤다면 반드시.
 - `bash macos/capture.sh` — 현재 맥 설정 덤프 (`macos/defaults.sh` 와 대조)
 - `brew bundle check --verbose --file=Brewfile`
 

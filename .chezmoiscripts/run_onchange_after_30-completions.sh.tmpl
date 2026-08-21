@@ -5,10 +5,12 @@
 # 있어 다시 돌아야 한다. 평상시 재생성은 mise 의 postinstall 훅이 맡는다
 # (dot_config/mise/config.toml).
 #
-# 위임 로직(_mise_comp_dispatch)은 그냥 관리 대상 파일이라 chezmoi 가 직접
-# 반영한다 — 해시로 추적할 필요가 없다.
+# 디스패처 해시도 추적한다. 내용이 바뀌는 것 자체는 상관없지만(함수는 셸마다
+# 새로 읽힌다) 파일이 새로 생기거나 사라지면 compinit 이 스캔하는 '파일 목록'이
+# 달라져서 zcompdump 를 다시 만들어야 하기 때문이다.
 #
-# 생성기 해시: {{ include "dot_local/bin/executable_mise-completions" | sha256sum }}
+# 생성기 해시:  {{ include "dot_local/bin/executable_mise-completions" | sha256sum }}
+# 디스패처 해시: {{ include "dot_local/share/zsh/functions/_mise_comp_dispatch" | sha256sum }}
 set -euo pipefail
 
 BREW_PREFIX="$(brew --prefix 2>/dev/null || echo /opt/homebrew)"
@@ -21,8 +23,20 @@ fi
 # 완성 캐시 디렉토리 (dot_zshrc 4번 섹션의 zstyle cache-path)
 mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompcache"
 
-# mise 툴별 스텁 생성 + 캐시 예열 (스텁 목록이 바뀌면 zcompdump 도 무효화)
+# mise 툴별 스텁 생성 + 캐시 예열
 echo "==> mise 툴 완성 준비…"
 "$HOME/.local/bin/mise-completions" || true
+
+# zcompdump 무효화 — 여기서는 조건 없이 지운다.
+#
+# 생성기도 스텁 목록이 바뀌면 지우지만, 그것만으로는 부족하다. 생성기는 자기가
+# 만드는 스텁만 비교할 뿐 **FPATH 구성이 바뀐 것은 알지 못한다.** 실제로
+# ~/.local/share/zsh/functions 를 FPATH 에 새로 추가한 apply 에서, 스텁은
+# 그대로였던 탓에 덤프가 남았고 `compinit -C` 가 그 덤프를 그대로 써서
+# _mise_comp_dispatch 가 등록되지 않았다 — 완성이 통째로 죽었는데 에러는 없었다.
+#
+# 이 스크립트는 생성기나 디스패처가 바뀐 apply 에서만 도니까 비용은 무시해도 된다
+# (다음 셸 하나가 compinit 을 처음부터 도는 정도).
+rm -f "${ZDOTDIR:-$HOME}/.zcompdump" "${ZDOTDIR:-$HOME}/.zcompdump.zwc"
 
 echo "==> 완료. 새 셸을 열면 완성이 적용됩니다."
