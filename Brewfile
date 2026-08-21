@@ -66,3 +66,5 @@ cask "font-meslo-lg-nerd-font"   # ~/.config/ghostty/config 가 지정하는 폰
 #   claude-code — 네이티브 설치본(~/.local/share/claude)이 자체 업데이터로 항상 앞선다.
 #     PATH 도 ~/.local/bin 이 /opt/homebrew/bin 보다 먼저라 brew 판은 가려져서 안 쓰인다.
 #   direnv — mise 가 .mise.toml 로 디렉토리별 env/툴 버전을 이미 처리. 병용 시 로딩 순서 충돌.
+
+cask "unterminated
