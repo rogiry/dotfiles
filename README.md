@@ -10,7 +10,7 @@ macOS 개발 환경을 [chezmoi](https://chezmoi.io) 로 관리한다.
 | 터미널 | cmux (Ghostty 기반) + MesloLGS Nerd Font |
 | 도구 | eza, bat, rg, fd, fzf, zoxide, lazygit, gh |
 | 시스템 | Dock / 키보드 / 트랙패드 설정 스크립트 |
-| 부가 | Claude Code 상태줄 (ccstatusline) |
+| 부가 | Claude Code CLI + 상태줄 (ccstatusline) |
 
 ## 설치
 
@@ -107,7 +107,8 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 ├── .chezmoiscripts/
 │   ├── run_onchange_before_10-brew.sh.tmpl    Brewfile 변경 시 brew bundle
 │   ├── run_onchange_after_20-mise.sh.tmpl     mise 설정 변경 시 런타임 설치
-│   └── run_once_after_30-completions.sh       완성 정의 설치 (최초 1회)
+│   ├── run_once_after_30-completions.sh       완성 정의 설치 (최초 1회)
+│   └── run_once_after_40-claude-code.sh       Claude Code CLI 설치 (없을 때만)
 ├── dot_zshrc                    →  ~/.zshrc
 ├── dot_zprofile                 →  ~/.zprofile
 ├── dot_gitconfig.tmpl           →  ~/.gitconfig  (템플릿)
