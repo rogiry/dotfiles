@@ -1,10 +1,28 @@
 {
-  "version": 3,
+  "version": 4,
   "lines": [
     [
       {
         "id": "8d5ef47b-4815-4a08-a275-900d61c68b33",
         "type": "model"
+      },
+      {
+        "id": "model-effort-open",
+        "type": "custom-text",
+        "color": "brightBlack",
+        "customText": " ("
+      },
+      {
+        "id": "model-effort",
+        "type": "thinking-effort",
+        "color": "brightBlack",
+        "rawValue": true
+      },
+      {
+        "id": "model-effort-close",
+        "type": "custom-text",
+        "color": "brightBlack",
+        "customText": ")"
       },
       {
         "id": "2",
@@ -41,101 +59,127 @@
     ],
     [
       {
+        "id": "1",
         "type": "custom-command",
-        "commandPath": "$HOME/.local/bin/git-status-bits repo",
-        "timeout": 1000,
         "color": "brightBlue",
-        "id": "1"
+        "commandPath": "$HOME/.local/bin/git-status-bits repo",
+        "timeout": 1000
       },
       {
-        "type": "separator",
-        "id": "2"
+        "id": "2",
+        "type": "separator"
       },
       {
+        "id": "3",
         "type": "custom-command",
-        "commandPath": "$HOME/.local/bin/git-status-bits branch",
-        "timeout": 1000,
         "color": "magenta",
-        "id": "3"
+        "commandPath": "$HOME/.local/bin/git-status-bits branch",
+        "timeout": 1000
       },
       {
-        "type": "separator",
-        "id": "4"
+        "id": "4",
+        "type": "separator"
       },
       {
+        "id": "5",
         "type": "custom-command",
-        "commandPath": "$HOME/.local/bin/git-status-bits commit",
-        "timeout": 1000,
         "color": "brightYellow",
-        "id": "5"
+        "commandPath": "$HOME/.local/bin/git-status-bits commit",
+        "timeout": 1000
       },
       {
-        "type": "separator",
-        "id": "6"
+        "id": "6",
+        "type": "separator"
       },
       {
+        "id": "7",
         "type": "git-insertions",
         "color": "green",
-        "metadata": {
-          "hideNoGit": "true",
-          "hideWhenEmpty": "true",
-          "hideNoRemote": "true"
-        },
         "merge": "no-padding",
-        "id": "7"
+        "metadata": {
+          "hide": "no-git"
+        }
       },
       {
+        "id": "8",
         "type": "git-deletions",
         "color": "red",
         "metadata": {
-          "hideNoGit": "true",
-          "hideWhenEmpty": "true",
-          "hideNoRemote": "true"
-        },
-        "id": "8"
+          "hide": "no-git"
+        }
       },
       {
-        "type": "separator",
-        "id": "9"
+        "id": "9",
+        "type": "separator"
       },
       {
+        "id": "10",
         "type": "custom-command",
-        "commandPath": "$HOME/.local/bin/git-status-bits files",
-        "timeout": 1000,
         "color": "white",
+        "commandPath": "$HOME/.local/bin/git-status-bits files",
         "preserveColors": true,
-        "id": "10"
+        "timeout": 1000
       },
       {
-        "type": "separator",
-        "id": "11"
+        "id": "11",
+        "type": "separator"
       },
       {
+        "id": "12",
         "type": "git-review",
         "color": "cyan",
         "metadata": {
-          "hideNoGit": "true",
-          "hideWhenEmpty": "true",
-          "hideNoRemote": "true"
-        },
-        "id": "12"
+          "hide": "no-git,no-data"
+        }
       },
       {
-        "type": "separator",
-        "id": "13"
+        "id": "13",
+        "type": "separator"
       },
       {
+        "id": "14",
         "type": "git-ci-status",
         "color": "brightGreen",
         "metadata": {
-          "hideNoGit": "true",
-          "hideWhenEmpty": "true",
-          "hideNoRemote": "true"
-        },
-        "id": "14"
+          "hide": "no-git"
+        }
       }
     ],
     [
+      {
+        "id": "1a95d2f9-b3af-4c95-8def-72e3d793e1b6",
+        "type": "custom-text",
+        "color": "brightBlack",
+        "customText": "Used: "
+      },
+      {
+        "id": "session-cost-1",
+        "type": "session-cost",
+        "color": "green",
+        "rawValue": true
+      },
+      {
+        "id": "used-paren-open",
+        "type": "custom-text",
+        "color": "brightBlack",
+        "customText": " ("
+      },
+      {
+        "id": "da89cbe5-3529-4433-aa0e-4b0f7e7b9bcf",
+        "type": "extra-usage-used",
+        "color": "brightBlack",
+        "rawValue": true
+      },
+      {
+        "id": "used-paren-close",
+        "type": "custom-text",
+        "color": "brightBlack",
+        "customText": ")"
+      },
+      {
+        "id": "used-sep",
+        "type": "separator"
+      },
       {
         "id": "1",
         "type": "tokens-input",
@@ -200,12 +244,12 @@
         "type": "separator"
       },
       {
+        "id": "13",
         "type": "current-working-dir",
         "color": "brightBlue",
         "metadata": {
           "abbreviateHome": "true"
-        },
-        "id": "13"
+        }
       }
     ],
     [
@@ -259,11 +303,13 @@
   "inheritSeparatorColors": false,
   "globalBold": false,
   "gitCacheTtlSeconds": 5,
+  "terminalWidthCacheTtlSeconds": 5,
+  "customCommandCacheTtlSeconds": 0,
   "minimalistMode": false,
   "powerline": {
     "enabled": false,
     "separators": [
-      "\ue0b0"
+      ""
     ],
     "separatorInvertBackground": [
       false
@@ -272,5 +318,9 @@
     "endCaps": [],
     "autoAlign": false,
     "continueThemeAcrossLines": false
+  },
+  "installation": {
+    "method": "pinned",
+    "installedVersion": "2.2.29"
   }
 }
