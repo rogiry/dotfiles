@@ -15,7 +15,8 @@ brew "fzf"                       # 퍼지 파인더
 brew "fzf-tab"                   # 탭 완성 메뉴를 fzf 로 대체
 
 # ── 런타임 / 버전 관리 ────────────────────────────────────
-brew "mise"                      # bun, node 등 런타임 버전 관리
+# mise 는 여기 없다 — brew 판은 self-update 가 막혀 있어서 공식 스크립트로 깐다.
+#   → .chezmoiscripts/run_once_before_15-mise.sh  (docs/runtimes.md 참고)
 brew "usage"                     # mise 완성 스크립트 백엔드
 
 # ── 코어 CLI 대체재 ───────────────────────────────────────

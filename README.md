@@ -87,7 +87,7 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 | 문서 | 내용 |
 |---|---|
 | [docs/shell.md](docs/shell.md) | `.zshrc` 로드 순서, 탭 완성(프로젝트 버전 추종), alias 정책, 로컬 오버라이드 |
-| [docs/runtimes.md](docs/runtimes.md) | mise 백엔드 정책 (core > aqua, asdf/vfox 차단), 툴 완성 생성 |
+| [docs/runtimes.md](docs/runtimes.md) | mise 백엔드 정책 (core > aqua > vfox/asdf), mise 설치 방식(self-update), 툴 완성 생성 |
 | [docs/macos.md](docs/macos.md) | 시스템 기본값 스크립트와 drift 확인 |
 | [docs/statusline.md](docs/statusline.md) | Claude Code 상태줄 구성과 `git-status-bits` |
 | [docs/secrets.md](docs/secrets.md) | API 키를 macOS 키체인으로 다루는 방식 |
@@ -106,6 +106,7 @@ curl -fsSL https://raw.githubusercontent.com/rogiry/dotfiles/main/bootstrap.sh \
 ├── .chezmoiignore               저장소에만 두고 홈에 안 뿌릴 것
 ├── .chezmoiscripts/
 │   ├── run_onchange_before_10-brew.sh.tmpl    Brewfile 변경 시 brew bundle
+│   ├── run_once_before_15-mise.sh             mise 설치 — 공식 스크립트 (없을 때만)
 │   ├── run_onchange_after_20-mise.sh.tmpl     mise 설정 변경 시 런타임 설치
 │   ├── run_onchange_after_30-completions.sh.tmpl  완성 스텁 생성 + 캐시 예열
 │   └── run_once_after_40-claude-code.sh       Claude Code CLI 설치 (없을 때만)

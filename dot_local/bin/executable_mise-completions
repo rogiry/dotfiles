@@ -10,8 +10,9 @@
 # ── 왜 필요한가 ─────────────────────────────────────────────────────
 # mise 는 툴의 '바이너리'만 깐다. brew 처럼 완성 스크립트를
 # share/zsh/site-functions 로 옮겨주는 단계가 없어서, mise 로 넣은
-# bun/uv/deno 는 탭 완성이 통째로 없다. `mise` 자신의 완성(_mise)은
-# brew 가 깔아준 것이라 "mise 는 되는데 mise 로 깐 툴은 안 된다" 로 보인다.
+# bun/uv/deno 는 탭 완성이 통째로 없다. `mise` 자신의 완성(_mise)도 마찬가지다:
+# brew 판 mise 는 깔아줬지만, 공식 스크립트로 깐 바이너리(run_once_before_15-mise.sh)
+# 는 안 깐다. 그래서 이 스크립트가 `mise completion zsh` 로 _mise 도 만든다.
 #
 # ── 무엇을 만드나 ───────────────────────────────────────────────────
 # 완성 정의를 직접 깔지 않고 **두 줄짜리 스텁**을 깐다:
@@ -239,6 +240,17 @@ while IFS=$'\t' read -r tool version; do
 
   [ "$hit" -eq 1 ] || note "$tool: 완성 정의 없음"
 done <<< "$tools"
+
+# mise 자신의 완성(_mise). 출력에 버전이 박혀 있지 않고 후보는 TAB 시점에 mise 를
+# 불러 얻으므로, 스텁 디렉토리에 같이 만들어 두면 된다 (디렉토리를 통째로 갈아엎으니
+# 여기서 만들지 않으면 매번 사라진다).
+if mise completion zsh > "$staging/_mise" 2>/dev/null && [ -s "$staging/_mise" ]; then
+  generated="$generated _mise"
+  note "mise: _mise"
+else
+  rm -f "$staging/_mise"
+  note "mise: 자신의 완성을 만들지 못했다"
+fi
 
 # ── 교체 ────────────────────────────────────────────────────────────
 changed=1

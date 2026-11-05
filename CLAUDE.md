@@ -38,6 +38,9 @@
 
 - `dot_zshrc` 의 번호 매긴 섹션은 **로드 순서가 load-bearing**. 재배열 금지.
   fzf-tab 은 compinit 뒤 + 위젯 래핑 플러그인 앞, syntax-highlighting 은 맨 끝.
+- **mise 는 brew 가 아니라 `run_once_before_15-mise.sh`(mise.run)로 깐다** — brew 판은
+  `self-update` 가 막혀 있다. `Brewfile` 에 `brew "mise"` 를 되살리지 말 것. `_mise` 완성도
+  brew 가 아니라 `mise-completions` 가 만든다. (`disable_backends` 는 안 쓴다: docs/runtimes.md)
 - mise `node` 는 **core 백엔드 유지**. `aqua:nodejs/node` 는 `lts` 별칭을 해석 못 함.
 - **mise 는 완성 스크립트를 안 깔아준다** (바이너리만). `~/.local/bin/mise-completions`
   가 `~/.local/share/zsh/site-functions` 에 **두 줄짜리 스텁**만 깔고, 실제 정의는
