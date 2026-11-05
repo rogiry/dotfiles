@@ -197,6 +197,10 @@ bins_for() {
             | sed 's#.*/_##')
     if [ -n "$found" ]; then printf '%s\n' "$found"; return 0; fi
   fi
+  # 마지막 폴백: 툴 이름을 바이너리 이름으로 본다. 단 '/' 가 든 이름
+  # (npm:@scope/pkg 등)은 바이너리 이름일 수 없다. 캐시 경로에 끼면 없는
+  # 하위 디렉토리를 가리켜 `No such file or directory` 가 난다.
+  case "$tool" in */*) return 0 ;; esac
   printf '%s\n' "$tool"
 }
 

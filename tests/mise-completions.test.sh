@@ -127,6 +127,39 @@ check "만든 것을 캐시에 남긴다"        "있음" \
       "$([ -s "$CACHE/newbin@2.0.0" ] && echo 있음 || echo 없음)"
 
 echo
+echo "== 생성기: 이름에 '/' 가 든 툴 (npm:@scope/pkg)"
+# 완성 정의가 없는 툴은 '툴 이름 = 바이너리 이름' 으로 폴백한다. npm:@scope/pkg 의
+# '/' 가 캐시 경로에 끼면 없는 디렉토리를 가리켜 `No such file or directory` 가 난다
+# (mise install 마다 postinstall 훅이 에러를 뱉던 버그). 가짜 mise 로 재현한다.
+# PATH 를 /usr/bin:/bin 으로 고정한다. 개발 맥에서 jq 는 mise shim 일 수 있는데,
+# HOME 을 바꾸면 shim 이 진짜 mise 를 불러 '신뢰되지 않은 설정' 으로 죽는다.
+if PATH=/usr/bin:/bin command -v jq >/dev/null 2>&1; then
+  BASH_BIN="$(command -v bash)"
+  mkdir -p "$TMP/fakebin"
+  cat > "$TMP/fakebin/mise" <<'MISE_EOF'
+#!/bin/sh
+# 가짜 mise — 생성기가 부르는 서브커맨드만 흉내 낸다.
+case "$*" in
+  *"ls --installed --json"*)
+    printf '{"npm:@scope/pkg":[{"version":"1.2.3","installed":true,"active":true}]}\n' ;;
+  "completion zsh")
+    printf '#compdef mise\n_mise() { :; }\n' ;;
+  *) exit 1 ;;   # where / exec 는 실패 — 완성 정의 없는 툴
+esac
+MISE_EOF
+  chmod +x "$TMP/fakebin/mise"
+  rc=0
+  err=$(HOME="$TMP" XDG_DATA_HOME='' XDG_CACHE_HOME='' ZDOTDIR='' PATH="$TMP/fakebin:/usr/bin:/bin" \
+        "$BASH_BIN" "$REPO_ROOT/dot_local/bin/executable_mise-completions" -q 2>&1 >/dev/null) || rc=$?
+  check "종료 코드 0"                    "0" "$rc"
+  check "에러 출력 없음"                 ""  "$err"
+  check "mise 자신의 _mise 를 만든다"    "있음" \
+        "$([ -s "$TMP/.local/share/zsh/site-functions/_mise" ] && echo 있음 || echo 없음)"
+else
+  echo "  skip  jq 없음"
+fi
+
+echo
 if [ "$fails" -eq 0 ]; then
   echo "모두 통과"
 else
