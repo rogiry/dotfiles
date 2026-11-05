@@ -46,7 +46,8 @@ setopt INTERACTIVE_COMMENTS   # 대화형 셸에서도 # 주석 허용
 setopt NO_BEEP
 
 # ── 4. 완성 시스템 ───────────────────────────────────────────────
-#    brew site-functions 에 _brew _gh _mise _usage _zed 등이 들어있다.
+#    brew site-functions 에 _brew _gh _usage _zed 등이 들어있다.
+#    (_mise 는 brew 가 아니라 mise-completions 가 아래 site-functions 에 만든다.)
 if [[ -d "$HOMEBREW_PREFIX/share/zsh-completions" ]]; then
   FPATH="$HOMEBREW_PREFIX/share/zsh-completions:$FPATH"
 fi

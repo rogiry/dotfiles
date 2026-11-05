@@ -3,6 +3,10 @@
 # mise config hash: {{ include "dot_config/mise/config.toml" | sha256sum }}
 set -euo pipefail
 
+# mise 는 ~/.local/bin 에 있다 (run_once_before_15-mise.sh). 비대화 셸은 .zshrc 를
+# 안 읽어서 PATH 에 없을 수 있다.
+export PATH="$HOME/.local/bin:$PATH"
+
 command -v mise >/dev/null 2>&1 || { echo "-- mise 없음, 건너뜀"; exit 0; }
 
 echo "==> mise: 런타임 설치 중…"

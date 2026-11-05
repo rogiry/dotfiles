@@ -2,7 +2,7 @@
 # 문서: https://mise.jdx.dev/configuration.html
 
 [settings]
-# ── 백엔드 우선순위: core > aqua > (asdf/vfox 차단) ───────────────
+# ── 백엔드 우선순위: core > aqua > vfox/asdf (레지스트리 순서) ─────
 #
 # mise 레지스트리가 이미 이 순서를 반영한다:
 #   bun     -> core:bun                                   (core 가 있으면 core 만)
@@ -14,9 +14,19 @@
 #        (lts 별칭, .node-version 인식, npm/npx/corepack 심 생성, 소스 빌드 등).
 # aqua = 체크섬·서명이 검증되는 범용 바이너리 레지스트리. core 가 없는 툴의 1순위.
 #
-# 아래 설정은 asdf/vfox 플러그인 백엔드를 꺼서, core 도 aqua 도 없을 때
-# 임의 코드를 실행하는 플러그인으로 조용히 내려가는 것을 막는다.
-disable_backends = ["asdf", "vfox"]
+# mise 에는 백엔드 '우선순위' 설정이 없다. 순서는 레지스트리의 툴별 나열 순서이고,
+# disable_backends 로 백엔드를 통째로 끄는 것만 가능하다.
+# (백엔드를 전체 이름으로 적어도 disabled 면 설치 거부된다 — 툴 단위 예외 불가)
+# 특정 백엔드를 쓰려면 툴 이름에 접두사를 명시한다. 예) "aqua:..." / "vfox:..."
+#
+# 백엔드는 차단하지 않는다. asdf(bash)·vfox(Lua) 모두 제3자 코드를 내 권한으로 실행하므로
+# 어느 쪽도 보안 경계가 아니다. 실질적 보호는 core/aqua 우선 사용(체크섬·서명 검증)에서 나온다.
+#
+# 주의: 아래 툴은 레지스트리에서 vfox 가 aqua 등보다 앞이라, 단축명으로 쓰면 vfox 로 깔린다.
+#       aqua 원칙을 지키려면 백엔드를 명시한다. 예) "aqua:neovim/neovim" = "latest"
+#   1password/op -> aqua:1password/cli   neovim -> aqua:neovim/neovim
+#   yarn -> aqua:yarnpkg/berry           eza -> cargo:eza
+#   poetry -> pipx:poetry                pipenv -> pipx:pipenv
 
 # aqua 아티팩트 검증 (모두 mise 기본값 true — 명시해서 고정)
 [settings.aqua]
@@ -26,9 +36,17 @@ github_attestations = true
 minisign            = true
 
 [tools]
+aws = { version = "latest", symlink_bins = "true" }
 # 둘 다 core 백엔드. 레지스트리 기본값이자 이 파일의 우선순위 정책과 일치한다.
 bun  = "latest"
+gcloud = "latest"
+helm = "latest"
+k9s = "latest"
+kubectl = "latest"
+kubectx = "latest"
 node = "lts"     # core 만 "lts" 별칭을 해석한다 (aqua:nodejs/node 는 빈 결과)
+powerpipe = "latest"
+steampipe = "latest"
 
 # ── 훅 ────────────────────────────────────────────────────────────
 # mise 는 툴의 '바이너리'만 깐다. brew 와 달리 완성 스크립트를
